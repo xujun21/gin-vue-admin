@@ -99,7 +99,18 @@ func (compService *CompanyService) GetCompanyInfoList(info companyReq.CompanySea
 	if err != nil {
 		return
 	}
-
+	var OrderStr string
+	orderMap := make(map[string]bool)
+	orderMap["company_name"] = true
+	if orderMap[info.Sort] {
+		OrderStr = info.Sort
+		if info.Order == "descending" {
+			OrderStr = OrderStr + " desc"
+		}
+		db = db.Order(OrderStr)
+	} else {
+		db = db.Order("id desc")
+	}
 	err = db.Limit(limit).Offset(offset).Find(&comps).Error
 	return comps, total, err
 }

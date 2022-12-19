@@ -16,9 +16,10 @@ type Order struct {
 	Invoice_date          *time.Time `json:"invoice_date" form:"invoice_date" gorm:"column:invoice_date;comment:;"`
 	Bill_to               string     `json:"bill_to" form:"bill_to" gorm:"column:bill_to;comment:;"`
 	Ship_to               string     `json:"ship_to" form:"ship_to" gorm:"column:ship_to;comment:;"`
-	Quantity              *int       `json:"quantity" form:"quantity" gorm:"column:quantity;comment:;"`
+	Quantity              uint       `json:"quantity" form:"quantity" gorm:"column:quantity;comment:;"`
 	Subtotal              *float64   `json:"subtotal" form:"subtotal" gorm:"column:subtotal;comment:单价*箱数，不含税;"`
 	Vat                   *float64   `json:"vat" form:"vat" gorm:"column:vat;comment:;"`
+	DeliveryFee           *float64   `json:"delivery_fee" form:"delivery_fee" gorm:"column:delivery_fee;comment:运费;"`
 	Discount              *float64   `json:"discount" form:"discount" gorm:"column:discount;comment:;"`
 	Order_total           *float64   `json:"order_total" form:"order_total" gorm:"column:order_total;comment:;"`
 	Bill_to_contact_name  string     `json:"bill_to_contact_name" form:"bill_to_contact_name" gorm:"column:bill_to_contact_name;comment:;"`

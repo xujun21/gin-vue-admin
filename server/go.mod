@@ -26,6 +26,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil/v3 v3.22.5
+	github.com/shopspring/decimal v1.2.0
 	github.com/songzhibin97/gkit v1.2.7
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.1

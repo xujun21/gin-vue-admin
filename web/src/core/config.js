@@ -3,8 +3,8 @@
  */
 
 const config = {
-  appName: 'Gin-Vue-Admin',
-  appLogo: 'https://www.gin-vue-admin.com/img/logo.png',
+  appName: 'S&L管理系统',
+  appLogo: '../../assets/logo.png',
   showViteLogo: false
 }
 

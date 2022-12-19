@@ -19,6 +19,7 @@ type ProductSearch struct {
 	StartStore     *int       `json:"startStore" form:"startStore"`
 	EndStore       *int       `json:"endStore" form:"endStore"`
 	request.PageInfo
-	Sort  string `json:"sort" form:"sort"`
-	Order string `json:"order" form:"order"`
+	Sort      string `json:"sort" form:"sort"`
+	Order     string `json:"order" form:"order"`
+	WithPrice *int   `json:"withPrice" form:"withPrice"`
 }

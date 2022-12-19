@@ -29,4 +29,11 @@ type OrderSearch struct {
 	StartCustomer_id   *int       `json:"startCustomer_id" form:"startCustomer_id"`
 	EndCustomer_id     *int       `json:"endCustomer_id" form:"endCustomer_id"`
 	request.PageInfo
+	Sort     string `json:"sort" form:"sort"`
+	OrderStr string `json:"order" form:"order"`
+}
+
+type OrderExcelInfo struct {
+	//FileName string `json:"fileName" form:"fileName"`
+	OrderId *int `json:"orderId" form:"orderId"`
 }

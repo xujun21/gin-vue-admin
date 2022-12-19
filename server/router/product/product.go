@@ -19,6 +19,7 @@ func (s *ProductRouter) InitProductRouter(Router *gin.RouterGroup) {
 		prodRouter.DELETE("deleteProduct", prodApi.DeleteProduct)           // 删除Product
 		prodRouter.DELETE("deleteProductByIds", prodApi.DeleteProductByIds) // 批量删除Product
 		prodRouter.PUT("updateProduct", prodApi.UpdateProduct)              // 更新Product
+		prodRouter.POST("exportProductExcel", prodApi.ExportProductExcel)   // 导出产品
 	}
 	{
 		prodRouterWithoutRecord.GET("findProduct", prodApi.FindProduct)       // 根据ID获取Product

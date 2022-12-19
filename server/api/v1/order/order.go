@@ -10,6 +10,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type OrderApi struct {
@@ -34,6 +35,13 @@ func (ordApi *OrderApi) CreateOrder(c *gin.Context) {
 		return
 	}
 	ord.CreatedBy = utils.GetUserID(c)
+	verify := utils.Rules{
+		"Customer_company_name": {utils.NotEmpty()},
+	}
+	if err := utils.Verify(ord, verify); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
 	if err := ordService.CreateOrder(ord); err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
 		response.FailWithMessage("创建失败", c)
@@ -168,4 +176,64 @@ func (ordApi *OrderApi) GetOrderList(c *gin.Context) {
 			PageSize: pageInfo.PageSize,
 		}, "获取成功", c)
 	}
+}
+
+func (ordApi *OrderApi) ExportInvoiceExcel(c *gin.Context) {
+	var excelInfo orderReq.OrderExcelInfo
+	err := c.ShouldBindJSON(&excelInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	//if strings.Index(excelInfo.OrderId, "..") > -1 {
+	//	response.FailWithMessage("包含非法字符", c)
+	//	return
+	//}
+	filePath := global.GVA_CONFIG.Excel.Dir + "invoice" + strconv.Itoa(*excelInfo.OrderId) + ".xlsx"
+	err = ordService.ExportInvoiceExcel(excelInfo.OrderId, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载发票失败!", zap.Error(err))
+		response.FailWithMessage("下载发票失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
+}
+
+func (ordApi *OrderApi) ExportConfirmExcel(c *gin.Context) {
+	var excelInfo orderReq.OrderExcelInfo
+	err := c.ShouldBindJSON(&excelInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	filePath := global.GVA_CONFIG.Excel.Dir + "confirm" + strconv.Itoa(*excelInfo.OrderId) + ".xlsx"
+	err = ordService.ExportConfirmExcel(excelInfo.OrderId, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载确认书失败!", zap.Error(err))
+		response.FailWithMessage("下载确认书失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
+}
+
+func (ordApi *OrderApi) ExportDeliveryNoteExcel(c *gin.Context) {
+	var excelInfo orderReq.OrderExcelInfo
+	err := c.ShouldBindJSON(&excelInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	filePath := global.GVA_CONFIG.Excel.Dir + "delivery" + strconv.Itoa(*excelInfo.OrderId) + ".xlsx"
+	err = ordService.ExportDeliveryNoteExcel(excelInfo.OrderId, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载运单失败!", zap.Error(err))
+		response.FailWithMessage("下载运单失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
 }

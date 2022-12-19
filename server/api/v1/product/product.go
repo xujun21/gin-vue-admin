@@ -169,3 +169,23 @@ func (prodApi *ProductApi) GetProductList(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
+
+func (prodApi *ProductApi) ExportProductExcel(c *gin.Context) {
+	var pageInfo productReq.ProductSearch
+	err := c.ShouldBindQuery(&pageInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	filePath := global.GVA_CONFIG.Excel.Dir + "product" + ".xlsx"
+	err = prodService.ExportProductExcel(pageInfo, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载商品表失败!", zap.Error(err))
+		response.FailWithMessage("下载商品表失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
+
+}

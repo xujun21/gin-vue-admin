@@ -15,10 +15,13 @@ func (s *OrderRouter) InitOrderRouter(Router *gin.RouterGroup) {
 	ordRouterWithoutRecord := Router.Group("ord")
 	var ordApi = v1.ApiGroupApp.OrderApiGroup.OrderApi
 	{
-		ordRouter.POST("createOrder", ordApi.CreateOrder)             // 新建Order
-		ordRouter.DELETE("deleteOrder", ordApi.DeleteOrder)           // 删除Order
-		ordRouter.DELETE("deleteOrderByIds", ordApi.DeleteOrderByIds) // 批量删除Order
-		ordRouter.PUT("updateOrder", ordApi.UpdateOrder)              // 更新Order
+		ordRouter.POST("createOrder", ordApi.CreateOrder)                         // 新建Order
+		ordRouter.DELETE("deleteOrder", ordApi.DeleteOrder)                       // 删除Order
+		ordRouter.DELETE("deleteOrderByIds", ordApi.DeleteOrderByIds)             // 批量删除Order
+		ordRouter.PUT("updateOrder", ordApi.UpdateOrder)                          // 更新Order
+		ordRouter.POST("exportInvoiceExcel", ordApi.ExportInvoiceExcel)           // 下载发票
+		ordRouter.POST("exportConfirmExcel", ordApi.ExportConfirmExcel)           // 下载发票
+		ordRouter.POST("exportDeliveryNoteExcel", ordApi.ExportDeliveryNoteExcel) // 下载发票
 	}
 	{
 		ordRouterWithoutRecord.GET("findOrder", ordApi.FindOrder)       // 根据ID获取Order

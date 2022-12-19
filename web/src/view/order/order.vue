@@ -2,16 +2,17 @@
   <div>
     <div class="gva-search-box">
       <el-form :inline="true" :model="searchInfo" class="demo-form-inline">
+        <!--
         <el-form-item label="创建时间">
           <el-date-picker v-model="searchInfo.startCreatedAt" type="datetime" placeholder="开始时间" />
           —
           <el-date-picker v-model="searchInfo.endCreatedAt" type="datetime" placeholder="结束时间" />
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item label="订单日期">
 
-          <el-date-picker v-model="searchInfo.startOrder_date" type="datetime" placeholder="搜索条件（起）" />
+          <el-date-picker v-model="searchInfo.startOrder_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（起）" />
           —
-          <el-date-picker v-model="searchInfo.endOrder_date" type="datetime" placeholder="搜索条件（止）" />
+          <el-date-picker v-model="searchInfo.endOrder_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（止）" />
 
         </el-form-item>
         <el-form-item label="发票号">
@@ -28,9 +29,9 @@
         </el-form-item>
         <el-form-item label="发票日期">
 
-          <el-date-picker v-model="searchInfo.startInvoice_date" type="datetime" placeholder="搜索条件（起）" />
+          <el-date-picker v-model="searchInfo.startInvoice_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（起）" />
           —
-          <el-date-picker v-model="searchInfo.endInvoice_date" type="datetime" placeholder="搜索条件（止）" />
+          <el-date-picker v-model="searchInfo.endInvoice_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（止）" />
 
         </el-form-item>
         <el-form-item label="付款方">
@@ -41,6 +42,7 @@
           <el-input v-model="searchInfo.ship_to" placeholder="搜索条件" />
 
         </el-form-item>
+        <!--
         <el-form-item label="货物数量">
 
           <el-input v-model.number="searchInfo.startQuantity" placeholder="搜索条件（起）" />
@@ -140,6 +142,7 @@
           <el-input v-model.number="searchInfo.endCustomer_id" placeholder="搜索条件（止）" />
 
         </el-form-item>
+        -->
         <el-form-item label="客户公司名">
           <el-input v-model="searchInfo.customer_company_name" placeholder="搜索条件" />
 
@@ -156,7 +159,7 @@
     </div>
     <div class="gva-table-box">
       <div class="gva-btn-list">
-        <el-button size="small" type="primary" icon="plus" @click="openDialog">新增</el-button>
+        <el-button size="small" type="primary" icon="plus" hidden @click="openDialog">新增</el-button>
         <el-button size="small" type="primary" icon="plus" @click="toDetail()">新增</el-button>
         <el-popover v-model:visible="deleteVisible" placement="top" width="160">
           <p>确定要删除吗？</p>
@@ -178,25 +181,10 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
+        <!--
         <el-table-column align="left" label="日期" width="180">
           <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
-        <el-table-column sortable align="left" label="订单日期" width="180">
-          <template #default="scope">{{ formatDate(scope.row.order_date) }}</template>
-        </el-table-column>
-        <el-table-column sortable align="left" label="发票号" prop="invoice_no" width="120" />
-        <el-table-column align="left" label="付款方式" prop="payment_method" width="120" />
-        <el-table-column align="left" label="PO号码" prop="po_number" width="120" />
-        <el-table-column sortable align="left" label="发票日期" width="180">
-          <template #default="scope">{{ formatDate(scope.row.invoice_date) }}</template>
-        </el-table-column>
-        <el-table-column align="left" label="付款方" prop="bill_to" width="120" />
-        <el-table-column align="left" label="收货方" prop="ship_to" width="120" />
-        <el-table-column sortable align="left" label="货物数量" prop="quantity" width="120" />
-        <el-table-column align="left" label="货款小计" prop="subtotal" width="120" />
-        <el-table-column sortable align="left" label="税金" prop="vat" width="120" />
-        <el-table-column sortable align="left" label="自动折扣" prop="discount" width="120" />
-        <el-table-column sortable align="left" label="订单总金额" prop="order_total" width="120" />
         <el-table-column align="left" label="付款人" prop="bill_to_contact_name" width="120" />
         <el-table-column align="left" label="付款人地址" prop="bill_to_address" width="120" />
         <el-table-column align="left" label="付款人城市" prop="bill_to_city" width="120" />
@@ -212,15 +200,38 @@
         </el-table-column>
         <el-table-column align="left" label="手工折扣" prop="hand_discount" width="120" />
         <el-table-column align="left" label="客户ID" prop="customer_id" width="120" />
-        <el-table-column align="left" label="客户公司名" prop="customer_company_name" width="120" />
         <el-table-column align="left" label="客户联系人" prop="customer_contact_name" width="120" />
-        <el-table-column align="left" label="按钮组">
+        -->
+        <el-table-column align="center" label="操作" width="200">
           <template #default="scope">
-            <!--<el-button type="primary" link icon="edit" size="small" class="table-button" @click="updateOrderFunc(scope.row)">变更</el-button>-->
-            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="toDetail(scope.row)">变更</el-button>
-            <el-button type="primary" link icon="delete" size="small" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="toDetail(scope.row)">修改订单</el-button>
+            <el-button type="primary" link icon="delete" size="small" @click="deleteRow(scope.row)">删除订单</el-button>
+            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="toItem(scope.row)">增减商品</el-button>
+            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="downloadConfirmation(scope.row)">订单确认</el-button>
+            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="exportDeliveryNote(scope.row)">运单确认</el-button>
+            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="downloadInvoice(scope.row)">发票打印</el-button>
           </template>
         </el-table-column>
+        <el-table-column align="right" label="订单号" prop="ID" width="80" />
+        <el-table-column sortable align="left" label="订单日期" width="110" prop="order_date">
+          <template #default="scope">{{ formatDateOnly(scope.row.order_date) }}</template>
+        </el-table-column>
+        <el-table-column align="left" label="客户公司名" prop="customer_company_name" width="200" />
+        <el-table-column align="right" label="商品数量" prop="quantity" width="80" />
+        <el-table-column align="right" label="货款小计" prop="subtotal" width="100" :formatter="formatCurrency" />
+        <el-table-column align="right" label="税金" prop="vat" width="80" :formatter="formatCurrency" />
+        <el-table-column align="right" label="运费" prop="delivery_fee" width="80" :formatter="formatCurrency" />
+        <el-table-column align="right" label="自动折扣" prop="discount" width="80" :formatter="formatCurrency" />
+        <el-table-column align="right" label="手工折扣" prop="hand_discount" width="80" :formatter="formatCurrency" />
+        <el-table-column align="right" label="订单总金额" prop="order_total" width="100" :formatter="formatCurrency" />
+        <el-table-column align="left" label="发票日期" width="100" prop="invoice_date">
+          <template #default="scope">{{ formatDateOnly(scope.row.invoice_date) }}</template>
+        </el-table-column>
+        <el-table-column align="left" label="发票号" prop="invoice_no" width="100" />
+        <el-table-column align="left" label="付款方式" prop="payment_method" width="120" />
+        <el-table-column align="left" label="PO号码" prop="po_number" width="100" />
+        <el-table-column align="left" label="付款方" prop="bill_to" width="120" />
+        <el-table-column align="left" label="收货方" prop="ship_to" width="120" />
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -341,11 +352,14 @@ import {
   deleteOrderByIds,
   updateOrder,
   findOrder,
-  getOrderList
+  getOrderList,
+  exportInvoiceExcel,
+  exportConfirmExcel,
+  exportDeliveryNoteExcel
 } from '@/api/order'
 
 // 全量引入格式化工具 请按需保留
-import { getDictFunc, formatDate, formatBoolean, filterDict } from '@/utils/format'
+import { formatDateOnly, formatCurrency } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
@@ -550,6 +564,16 @@ const toDetail = async(row) => {
   }
 }
 
+// 修改订单商品
+const toItem = async(row) => {
+  router.push({
+    name: 'subOrder',
+    params: {
+      id: row.ID,
+    },
+  })
+}
+
 // 关闭弹窗
 const closeDialog = () => {
   dialogFormVisible.value = false
@@ -608,6 +632,19 @@ const enterDialog = async() => {
          getTableData()
        }
      })
+}
+
+// 下载
+const downloadInvoice = (row) => {
+  exportInvoiceExcel(row.ID)
+}
+
+const downloadConfirmation = (row) => {
+  exportConfirmExcel(row.ID)
+}
+
+const exportDeliveryNote = (row) => {
+  exportDeliveryNoteExcel(row.ID)
 }
 </script>
 

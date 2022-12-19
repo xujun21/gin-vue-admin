@@ -11,7 +11,7 @@ export const formatBoolean = (bool) => {
 export const formatDate = (time) => {
   if (time !== null && time !== '') {
     var date = new Date(time)
-    return formatTimeToStr(date, 'yyyy-MM-dd hh:mm:ss')
+    return formatTimeToStr(date, 'dd-MM-yyyy hh:mm:ss')
   } else {
     return ''
   }
@@ -30,8 +30,20 @@ export const getDictFunc = async(type) => {
 export const formatDateOnly = (time) => {
   if (time !== null && time !== '') {
     var date = new Date(time)
-    return formatTimeToStr(date, 'yyyy-MM-dd')
+    return formatTimeToStr(date, 'dd-MM-yyyy')
   } else {
     return ''
   }
+}
+
+// el-column展示时数据格式化
+export const formatCurrency = (row, column) => {
+  var data = row[column.property] ? row[column.property] : 0
+  return '£ ' + parseFloat(data).toFixed(2)
+}
+
+// el-input展示时数据格式化
+export const formatCurrencyInput = (value) => {
+  console.log(parseFloat(val).toFixed(2))
+  return parseFloat(val).toFixed(2)
 }

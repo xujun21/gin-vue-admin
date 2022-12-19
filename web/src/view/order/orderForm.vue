@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="gva-form-box1">
+    <div class="gva-form-box">
       <el-form ref="elFormRef" :model="formData" label-position="right" :rules="rule" label-width="120px">
         <el-row>
           <el-col :span="10">
@@ -10,7 +10,7 @@
           </el-col>
           <el-col :span="14">
             <el-form-item label="订单日期:" prop="order_date">
-              <el-date-picker v-model="formData.order_date" type="date" placeholder="选择日期" :clearable="true" />
+              <el-date-picker v-model="formData.order_date" format="DD-MM-YYYY" type="date" placeholder="选择日期" :clearable="true" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -22,7 +22,7 @@
           </el-col>
           <el-col :span="14">
             <el-form-item label="发票日期:" prop="invoice_date">
-              <el-date-picker v-model="formData.invoice_date" type="date" placeholder="选择日期" :clearable="true" />
+              <el-date-picker v-model="formData.invoice_date" format="DD-MM-YYYY" type="date" placeholder="选择日期" :clearable="true" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -30,7 +30,7 @@
           <el-col :span="14">
             <el-form-item label="客户公司:" prop="customer_company_name">
               <el-input v-model="formData.customer_company_name" readonly placeholder="Customer Company Name"><template #append>
-                <el-button class="el-icon-search" @click="chooseCompany" />
+                <el-button type="primary" :icon="Search" @click="chooseCompany" />
               </template></el-input>
             </el-form-item>
           </el-col>
@@ -39,19 +39,24 @@
               <el-input v-model="formData.customer_contact_name" :clearable="true" placeholder="Customer Contact Name" />
             </el-form-item>
             <el-form-item label="客户ID:" prop="customer_id">
-              <el-input v-model="formData.customer_id" readonly="true" type="text" />
+              <el-input v-model="formData.customer_id" readonly type="text" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="10">
+          <el-col :span="8">
             <el-form-item label="付款方式:" prop="payment_method">
               <el-input v-model="formData.payment_method" :clearable="true" placeholder="Payment Method" />
             </el-form-item>
           </el-col>
-          <el-col :span="14">
+          <el-col :span="8">
             <el-form-item label="PO号码:" prop="po_number">
               <el-input v-model="formData.po_number" :clearable="true" placeholder="PONumber" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="运费:" prop="po_number">
+              <el-input-number v-model="formData.delivery_fee" :step="0.1" :precision="2" placeholder="Delivery Fee" @change="deliveryFeeChanged"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -127,80 +132,79 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row v-if="type === 'update'">
           <el-col :span="8">
             <el-form-item label="货物数量:" prop="quantity">
-              <el-input v-model.number="formData.quantity" :clearable="true" placeholder="自动计算" readonly />
+              <el-input v-model.number="formData.quantity" placeholder="自动计算" readonly />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="货款小计:" prop="subtotal">
-              <el-input-number v-model="formData.subtotal" :precision="2" :clearable="true" />
+              <el-input v-model="formData.subtotal" placeholder="自动计算" readonly />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="税金:" prop="vat">
-              <el-input-number v-model="formData.vat" :precision="2" :clearable="true" />
+              <el-input v-model="formData.vat" placeholder="自动计算" readonly />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row v-if="type === 'update'">
           <el-col :span="8">
             <el-form-item label="自动折扣:" prop="discount">
-              <el-input-number v-model="formData.discount" :precision="2" :clearable="true" />
+              <el-input v-model="formData.discount" placeholder="自动计算" readonly />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="手工折扣:" prop="hand_discount">
-              <el-input-number v-model="formData.hand_discount" :precision="2" :clearable="true" />
+              <el-input-number v-model="formData.hand_discount" :step="0.1" :precision="2" @change="discountChanged" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="订单总金额:" prop="order_total">
-              <el-input-number v-model="formData.order_total" :precision="2" :clearable="true" />
+              <el-input v-model="formData.order_total" placeholder="自动计算" readonly />
             </el-form-item>
           </el-col>
         </el-row>
-
+        <!--
         <el-form-item label="库存锁定:" prop="is_locked">
           <el-switch v-model="formData.is_locked" active-color="#13ce66" inactive-color="#ff4949" active-text="是" inactive-text="否" clearable />
         </el-form-item>
-
+        -->
         <el-form-item>
-          <el-button size="small" type="primary" @click="save">保存</el-button>
+          <el-button size="small" type="primary" :disabled="isDisabled" @click="save">保存</el-button>
           <el-button size="small" type="primary" @click="back">返回</el-button>
         </el-form-item>
       </el-form>
     </div>
+    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="请选择下单客户（点击即选中）">
+      <div class="gva-table-box">
+        <el-table ref="singleTable" highlight-current-row :data="tableData" style="width: 100%" tooltip-effect="dark" row-key="ID" @current-change="selectedChange">
+          <el-table-column align="left" label="客户ID" prop="ID" width="120" />
+          <el-table-column align="left" label="客户公司名" prop="company_name" />
+        </el-table>
+        <div class="gva-pagination">
+          <el-pagination
+            :current-page="page"
+            :page-size="pageSize"
+            :page-sizes="[10, 30, 50, 100]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
-
-  // eslint-disable-next-line vue/no-multiple-template-root
-  <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="请选择下单客户">
-    <div class="gva-table-box">
-      <el-table ref="singleTable" highlight-current-row :data="tableData" style="width: 100%" tooltip-effect="dark" row-key="ID" @current-change="selectedChange">
-        <el-table-column align="left" label="客户ID" prop="ID" width="120" />
-        <el-table-column align="left" label="客户公司名" prop="company_name" />
-      </el-table>
-      <div class="gva-pagination">
-        <el-pagination
-          :current-page="page"
-          :page-size="pageSize"
-          :page-sizes="[10, 30, 50, 100]"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </div>
-
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button size="small" @click="closeDialog">取 消</el-button>
-        <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
-      </div>
-    </template>
-  </el-dialog>
 </template>
 
 <script>
@@ -220,11 +224,68 @@ import {
   getCompanyList
 } from '@/api/company'
 
+import {
+  Edit, Share, Search
+} from '@element-plus/icons-vue'
+
 // 自动获取字典
-import { getDictFunc } from '@/utils/format'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ref, reactive } from 'vue'
+
+const isDisabled = ref(false)
+const orderTotal = ref(0)
+const handDiscount = ref(0)
+const deliveryFee = ref(0)
+
+const discountChanged = (val) => {
+  formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total'] * 100)) 
+                                + handDiscount.value - Math.round(val * 100)) / 100
+
+  // 更新
+  handDiscount.value = Math.round(val*100)
+
+  if (val < 0) {
+    ElMessage({
+      type: 'error',
+      message: '折扣不能小于0！'
+    })
+    isDisabled.value = true
+    return
+  } else if (val > orderTotal.value) {
+    ElMessage({
+      type: 'error',
+      message: '折扣不能大于订单总金额！'
+    })
+    isDisabled.value = true
+    return
+  }
+  isDisabled.value = false
+}
+
+const deliveryFeeChanged = (val) => {
+  // console.log(deliveryFee)
+  // console.log(Math.round(Number.parseFloat(formData.value['order_total']) * 100))
+  // console.log(Math.round(val * 100))
+  // console.log( (Math.round(Number.parseFloat(formData.value['order_total']) * 100)
+  //             - deliveryFee.value
+  //             + Math.round(val * 100)) / 100)
+  formData.value['order_total'] =  (Math.round(Number.parseFloat(formData.value['order_total']) * 100)
+              - deliveryFee.value
+              + Math.round(val * 100)) / 100
+  deliveryFee.value = Math.round(val * 100)
+
+  if (val < 0) {
+    ElMessage({
+      type: 'error',
+      message: '运费不能小于0！'
+    })
+    isDisabled.value = true
+    return
+  }
+  isDisabled.value = false
+}
+
 const route = useRoute()
 const router = useRouter()
 
@@ -235,8 +296,7 @@ const tableData = ref([])
 const searchInfo = ref()
 
 const companySelected = ref({ id: 0, company_name: '', contact_name: '' })
-// const company = ref({CreatedAt: '', CreatedBy: 0, DeletedBy: 0, ID: 0, UpdatedAt: '', UpdatedBy: '',
-//                 address: '', city: '', company_name: '', contact_name: '', note: '', phone: '', postcode: '', sage: '' })
+
 // 分页
 const handleSizeChange = (val) => {
   pageSize.value = val
@@ -275,6 +335,7 @@ const formData = ref({
   subtotal: 0,
   vat: 0,
   discount: 0,
+  delivery_fee: 0,
   order_total: 0,
   bill_to_contact_name: '',
   bill_to_address: '',
@@ -294,6 +355,18 @@ const formData = ref({
 })
 // 验证规则
 const rule = reactive({
+  customer_company_name: [{
+    required: true,
+    message: '请选择下单客户',
+    trigger: ['input', 'blur'],
+  }],
+  delivery_fee: [{
+    required: true,
+    type: 'number',
+    min: 1,
+    message: '',
+    trigger: ['input', 'blur'],
+  }],
 })
 
 const elFormRef = ref()
@@ -317,16 +390,17 @@ getCompanyData()
 // 初始化方法
 const init = async() => {
   // 建议通过url传参获取目标数据ID 调用 find方法进行查询数据操作 从而决定本页面是create还是update 以下为id作为url参数示例
-  if (route.params.id) {
+  if (route.params.id && route.params.id !== '0') {
     const res = await findOrder({ ID: route.params.id })
     if (res.code === 0) {
       formData.value = res.data.reord
-      console.log(res.data.reord)
       type.value = 'update'
+      orderTotal.value = Math.round(res.data.reord['order_total']*100)
+      handDiscount.value = Math.round(res.data.reord['hand_discount']*100)
+      deliveryFee.value = Math.round(res.data.reord['delivery_fee']*100)
     }
   } else {
     type.value = 'create'
-    console.log(type.value)
   }
 }
 
@@ -338,6 +412,7 @@ const save = async() => {
         let res
         switch (type.value) {
           case 'create':
+            console.log(formData.value)
             res = await createOrder(formData.value)
             break
           case 'update':
@@ -350,8 +425,9 @@ const save = async() => {
         if (res.code === 0) {
           ElMessage({
             type: 'success',
-            message: '创建/更改成功'
+            message: (type.value === 'create' ? '创建成功' : '更改成功'),
           })
+          back()
         }
       })
 }
@@ -372,6 +448,10 @@ const chooseCompany = () => {
 const enterDialog = () => {
   if (companySelected.value['id'] === 0) {
     // 提示需要选择一行
+    ElMessage({
+      type: 'error',
+      message: ('请选中一行'),
+    })
   } else {
     console.log(companySelected)
     formData.value['customer_company_name'] = companySelected.value['company_name']

@@ -1,4 +1,5 @@
 import service from '@/utils/request'
+import { ElMessage } from 'element-plus'
 
 // @Tags Order
 // @Summary 创建Order
@@ -73,11 +74,13 @@ export const updateOrder = (data) => {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
 // @Router /ord/findOrder [get]
 export const findOrder = (params) => {
-  return service({
-    url: '/ord/findOrder',
-    method: 'get',
-    params
-  })
+  if (params['ID'] !== '0') {
+    return service({
+      url: '/ord/findOrder',
+      method: 'get',
+      params
+    })
+  }
 }
 
 // @Tags Order
@@ -94,4 +97,70 @@ export const getOrderList = (params) => {
     method: 'get',
     params
   })
+}
+
+export const exportInvoiceExcel = (orderId) => {
+  service({
+    url: '/ord/exportInvoiceExcel',
+    method: 'post',
+    data: {
+      orderId: orderId
+    },
+    responseType: 'blob'
+  }).then((res) => {
+    handleFileError(res, 'invoice' + orderId + '.xlsx')
+  })
+}
+
+export const exportConfirmExcel = (orderId) => {
+  service({
+    url: '/ord/exportConfirmExcel',
+    method: 'post',
+    data: {
+      orderId: orderId
+    },
+    responseType: 'blob'
+  }).then((res) => {
+    handleFileError(res, 'confirm' + orderId + '.xlsx')
+  })
+}
+
+export const exportDeliveryNoteExcel = (orderId) => {
+  service({
+    url: '/ord/exportDeliveryNoteExcel',
+    method: 'post',
+    data: {
+      orderId: orderId
+    },
+    responseType: 'blob'
+  }).then((res) => {
+    handleFileError(res, 'delivery' + orderId + '.xlsx')
+  })
+}
+
+const handleFileError = (res, fileName) => {
+  // console.log(typeof (res.data))
+  if (typeof (res.data) !== 'undefined') {
+    if (res.data.type === 'application/json') {
+      const reader = new FileReader()
+      reader.onload = function() {
+        const message = JSON.parse(reader.result).msg
+        ElMessage({
+          showClose: true,
+          message: message,
+          type: 'error'
+        })
+      }
+      reader.readAsText(new Blob([res.data]))
+    }
+  } else {
+    var downloadUrl = window.URL.createObjectURL(new Blob([res]))
+    var a = document.createElement('a')
+    a.style.display = 'none'
+    a.href = downloadUrl
+    // console.log(downloadUrl)
+    a.download = fileName
+    var event = new MouseEvent('click')
+    a.dispatchEvent(event)
+  }
 }
