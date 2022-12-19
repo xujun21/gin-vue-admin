@@ -215,7 +215,9 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 		xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
 		xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
 		xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
-		xlsx.SetCellValue(sheet, "D"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+		if prods[i].Exp_date != nil {
+			xlsx.SetCellValue(sheet, "D"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+		}
 		xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
 		xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
 	}
