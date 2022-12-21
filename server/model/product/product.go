@@ -17,6 +17,7 @@ type Product struct {
 	Price           *float64   `json:"price" form:"price" gorm:"column:price;comment:;"`
 	Vat             *float64   `json:"vat" form:"vat" gorm:"column:vat;comment:;"`
 	Store           *int       `json:"store" form:"store" gorm:"column:store;comment:;"`
+	Barcode         string     `json:"barcode" form:"barcode" gorm:"column:barcode;comment:;"`
 	CreatedBy       uint       `gorm:"column:created_by;comment:创建者"`
 	UpdatedBy       uint       `gorm:"column:updated_by;comment:更新者"`
 	DeletedBy       uint       `gorm:"column:deleted_by;comment:删除者"`

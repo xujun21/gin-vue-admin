@@ -267,6 +267,10 @@ const confirmUpload = (val) => {
   dialogUploadVisible.value = false
 }
 
+const downloadExcelTemplate = () => {
+  downloadTemplate('ExcelTemplate.xlsx')
+}
+
 // 确认导入
 const doImport = async() => {
   const res = await doExecImport({ 'order_id': orderId })

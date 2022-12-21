@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	company2 "github.com/flipped-aurora/gin-vue-admin/server/model/company"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/order"
 	orderReq "github.com/flipped-aurora/gin-vue-admin/server/model/order/request"
 	"github.com/shopspring/decimal"
@@ -115,11 +116,23 @@ func (ordService *OrderService) GetOrderInfoList(info orderReq.OrderSearch) (lis
 	db := global.GVA_DB.Model(&order.Order{})
 	var ords []order.Order
 	// 如果有条件搜索 下方会自动创建搜索语句
-	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
-		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
+	//if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
+	//	db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
+	//}
+	//if info.StartOrder_date != nil && info.EndOrder_date != nil {
+	//	db = db.Where("order_date BETWEEN ? AND ? ", info.StartOrder_date, info.EndOrder_date)
+	//}
+	if info.StartCreatedAt != nil {
+		db = db.Where("created_at >= ?", info.StartCreatedAt)
 	}
-	if info.StartOrder_date != nil && info.EndOrder_date != nil {
-		db = db.Where("order_date BETWEEN ? AND ? ", info.StartOrder_date, info.EndOrder_date)
+	if info.EndCreatedAt != nil {
+		db = db.Where("create_at <= ?", info.EndCreatedAt)
+	}
+	if info.StartOrder_date != nil {
+		db = db.Where("order_date >= ? ", info.StartOrder_date)
+	}
+	if info.EndOrder_date != nil {
+		db = db.Where("order_date <= ? ", info.EndOrder_date)
 	}
 	if info.Invoice_no != "" {
 		db = db.Where("invoice_no LIKE ?", "%"+info.Invoice_no+"%")
@@ -609,6 +622,162 @@ func (ordService *OrderService) ExportDeliveryNoteExcel(orderId *int, fileName s
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
 	xlsx.SetCellStyle(sheet, "V"+iStr, "X"+iStr, bigNumStyle) // QTY
 	xlsx.SetCellValue(sheet, "V"+iStr, ord.Quantity)
+
+	err = xlsx.SaveAs(fileName)
+	return err
+}
+
+func (ordService *OrderService) ExportOrderExcel(info orderReq.OrderSearch, fileName string) (err error) {
+	// 创建db
+	db := global.GVA_DB.Model(&order.Order{})
+	var ords []order.Order
+	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.StartCreatedAt != nil {
+		db = db.Where("created_at >= ?", info.StartCreatedAt)
+	}
+	if info.EndCreatedAt != nil {
+		db = db.Where("create_at <= ?", info.EndCreatedAt)
+	}
+	if info.StartOrder_date != nil {
+		db = db.Where("order_date >= ? ", info.StartOrder_date)
+	}
+	if info.EndOrder_date != nil {
+		db = db.Where("order_date <= ? ", info.EndOrder_date)
+	}
+	if info.Invoice_no != "" {
+		db = db.Where("invoice_no LIKE ?", "%"+info.Invoice_no+"%")
+	}
+	if info.Payment_method != "" {
+		db = db.Where("payment_method LIKE ?", "%"+info.Payment_method+"%")
+	}
+	if info.Po_number != "" {
+		db = db.Where("po_number LIKE ?", "%"+info.Po_number+"%")
+	}
+	if info.StartInvoice_date != nil && info.EndInvoice_date != nil {
+		db = db.Where("invoice_date BETWEEN ? AND ? ", info.StartInvoice_date, info.EndInvoice_date)
+	}
+	if info.Bill_to != "" {
+		db = db.Where("bill_to LIKE ?", "%"+info.Bill_to+"%")
+	}
+	if info.Ship_to != "" {
+		db = db.Where("ship_to LIKE ?", "%"+info.Ship_to+"%")
+	}
+	if info.StartQuantity != nil && info.EndQuantity != nil {
+		db = db.Where("quantity BETWEEN ? AND ? ", info.StartQuantity, info.EndQuantity)
+	}
+	if info.StartSubtotal != nil && info.EndSubtotal != nil {
+		db = db.Where("subtotal BETWEEN ? AND ? ", info.StartSubtotal, info.EndSubtotal)
+	}
+	if info.StartVat != nil && info.EndVat != nil {
+		db = db.Where("vat BETWEEN ? AND ? ", info.StartVat, info.EndVat)
+	}
+	if info.StartDiscount != nil && info.EndDiscount != nil {
+		db = db.Where("discount BETWEEN ? AND ? ", info.StartDiscount, info.EndDiscount)
+	}
+	if info.StartOrder_total != nil && info.EndOrder_total != nil {
+		db = db.Where("order_total BETWEEN ? AND ? ", info.StartOrder_total, info.EndOrder_total)
+	}
+	if info.Bill_to_address != "" {
+		db = db.Where("bill_to_address LIKE ?", "%"+info.Bill_to_address+"%")
+	}
+	if info.Bill_to_city != "" {
+		db = db.Where("bill_to_city LIKE ?", "%"+info.Bill_to_city+"%")
+	}
+	if info.Bill_to_phone != "" {
+		db = db.Where("bill_to_phone LIKE ?", "%"+info.Bill_to_phone+"%")
+	}
+	if info.Bill_to_postcode != "" {
+		db = db.Where("bill_to_postcode LIKE ?", "%"+info.Bill_to_postcode+"%")
+	}
+	if info.Ship_to_contact_name != "" {
+		db = db.Where("ship_to_contact_name LIKE ?", "%"+info.Ship_to_contact_name+"%")
+	}
+	if info.Ship_to_address != "" {
+		db = db.Where("ship_to_address LIKE ?", "%"+info.Ship_to_address+"%")
+	}
+	if info.Ship_to_city != "" {
+		db = db.Where("ship_to_city LIKE ?", "%"+info.Ship_to_city+"%")
+	}
+	if info.Ship_to_phone != "" {
+		db = db.Where("ship_to_phone LIKE ?", "%"+info.Ship_to_phone+"%")
+	}
+	if info.Ship_to_postcode != "" {
+		db = db.Where("ship_to_postcode LIKE ?", "%"+info.Ship_to_postcode+"%")
+	}
+	if info.Is_locked != nil {
+		db = db.Where("is_locked = ?", info.Is_locked)
+	}
+	if info.StartHand_discount != nil && info.EndHand_discount != nil {
+		db = db.Where("hand_discount BETWEEN ? AND ? ", info.StartHand_discount, info.EndHand_discount)
+	}
+	if info.StartCustomer_id != nil && info.EndCustomer_id != nil {
+		db = db.Where("customer_id BETWEEN ? AND ? ", info.StartCustomer_id, info.EndCustomer_id)
+	}
+	if info.Customer_company_name != "" {
+		db = db.Where("customer_company_name LIKE ?", "%"+info.Customer_company_name+"%")
+	}
+	if info.Customer_contact_name != "" {
+		db = db.Where("customer_contact_name LIKE ?", "%"+info.Customer_contact_name+"%")
+	}
+
+	var OrderStr string // 排序
+	orderMap := make(map[string]bool)
+	orderMap["order_date"] = true
+	if orderMap[info.Sort] {
+		OrderStr = info.Sort
+		if info.OrderStr == "descending" {
+			OrderStr = OrderStr + " desc"
+		}
+		db = db.Order(OrderStr)
+	} else {
+		db = db.Order("id desc")
+	}
+	err = db.Find(&ords).Error
+
+	// excel
+	var xlsx *excelize.File
+	xlsx = excelize.NewFile()
+	var sheet = xlsx.GetSheetName(0)
+
+	err = xlsx.SetSheetRow(sheet, "A1", &[]string{
+		"Text10",
+		"CustomerName",
+		"Text11",
+		"Date",
+		"Text12",
+		"Text13",
+		"SumOfExtPrice2",
+		"Text14",
+		"SumOfVat"})
+
+	for i, j := 0, len(ords); i < j; i++ {
+		var company company2.Company
+		ord := ords[i]
+		err = global.GVA_DB.Where("id = ?", ord.Customer_id).First(&company).Error
+		if err != nil {
+			return err
+		}
+		axis := fmt.Sprintf("A%d", i+2)
+
+		price2, _ := decimal.NewFromFloat(*ord.Subtotal).Sub(decimal.NewFromFloat(*ord.Discount)).Sub(decimal.NewFromFloat(*ord.Hand_discount)).Float64()
+		var t12 string
+		if decimal.NewFromFloat(*ord.Vat).Cmp(decimal.NewFromInt32(0)) == 1 {
+			t12 = "T1"
+		} else {
+			t12 = "T2"
+		}
+		err = xlsx.SetSheetRow(sheet, axis, &[]interface{}{
+			"SI",
+			company.Sage,
+			4000,
+			ord.Invoice_date.Format("02/01/2006"),
+			ord.Invoice_no,
+			"GOODS",
+			price2,
+			t12,
+			*ord.Vat,
+		})
+	}
 
 	err = xlsx.SaveAs(fileName)
 	return err

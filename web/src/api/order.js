@@ -138,6 +138,17 @@ export const exportDeliveryNoteExcel = (orderId) => {
   })
 }
 
+export const exportOrderExcel = (params) => {
+  service({
+    url: '/ord/exportOrderExcel',
+    method: 'post',
+    params,
+    responseType: 'blob'
+  }).then((res) => {
+    handleFileError(res, 'OrderList.xlsx')
+  })
+}
+
 const handleFileError = (res, fileName) => {
   // console.log(typeof (res.data))
   if (typeof (res.data) !== 'undefined') {

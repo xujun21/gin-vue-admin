@@ -139,6 +139,9 @@
         <el-form-item label="商品库存量:" prop="store">
           <el-input v-model.number="formData.store" :clearable="true" placeholder="请输入" />
         </el-form-item>
+        <el-form-item label="商品条码:" prop="barcode">
+          <el-input v-model.number="formData.barcode" :clearable="true" placeholder="请输入" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -187,6 +190,7 @@ const formData = ref({
   price: 0,
   vat: 0,
   store: 0,
+  barcode: '',
 })
 
 // 验证规则
@@ -353,6 +357,7 @@ const closeDialog = () => {
     price: 0,
     vat: 0,
     store: 0,
+    barcode: '',
   }
 }
 // 弹窗确定

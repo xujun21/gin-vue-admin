@@ -237,3 +237,22 @@ func (ordApi *OrderApi) ExportDeliveryNoteExcel(c *gin.Context) {
 	c.Writer.Header().Add("success", "true")
 	c.File(filePath)
 }
+
+func (ordApi *OrderApi) ExportOrderExcel(c *gin.Context) {
+	var pageInfo orderReq.OrderSearch
+	err := c.ShouldBindQuery(&pageInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	filePath := global.GVA_CONFIG.Excel.Dir + "OrderList.xlsx"
+	err = ordService.ExportOrderExcel(pageInfo, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载订单列表失败!", zap.Error(err))
+		response.FailWithMessage("下载订单列表失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
+}

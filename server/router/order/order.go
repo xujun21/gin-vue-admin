@@ -20,8 +20,9 @@ func (s *OrderRouter) InitOrderRouter(Router *gin.RouterGroup) {
 		ordRouter.DELETE("deleteOrderByIds", ordApi.DeleteOrderByIds)             // 批量删除Order
 		ordRouter.PUT("updateOrder", ordApi.UpdateOrder)                          // 更新Order
 		ordRouter.POST("exportInvoiceExcel", ordApi.ExportInvoiceExcel)           // 下载发票
-		ordRouter.POST("exportConfirmExcel", ordApi.ExportConfirmExcel)           // 下载发票
-		ordRouter.POST("exportDeliveryNoteExcel", ordApi.ExportDeliveryNoteExcel) // 下载发票
+		ordRouter.POST("exportConfirmExcel", ordApi.ExportConfirmExcel)           // 下载确认单
+		ordRouter.POST("exportDeliveryNoteExcel", ordApi.ExportDeliveryNoteExcel) // 下载运单
+		ordRouter.POST("exportOrderExcel", ordApi.ExportOrderExcel)               // 下载订单列表
 	}
 	{
 		ordRouterWithoutRecord.GET("findOrder", ordApi.FindOrder)       // 根据ID获取Order

@@ -153,6 +153,7 @@
         </el-form-item>
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
+          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport()">导出</el-button>
           <el-button size="small" icon="refresh" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -355,7 +356,8 @@ import {
   getOrderList,
   exportInvoiceExcel,
   exportConfirmExcel,
-  exportDeliveryNoteExcel
+  exportDeliveryNoteExcel,
+  exportOrderExcel
 } from '@/api/order'
 
 // 全量引入格式化工具 请按需保留
@@ -365,6 +367,10 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+const handleExcelExport = () => {
+  exportOrderExcel({ ...searchInfo.value })
+}
 
 // 自动化生成的字典（可能为空）以及字段
 const formData = ref({

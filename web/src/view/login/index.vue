@@ -67,23 +67,23 @@
             </div>
           </el-form-item>
           <el-form-item>
-            <el-button
+            <!-- <el-button
               type="primary"
               style="width: 46%"
               size="large"
               @click="checkInit"
-            >前往初始化</el-button>
+            >前往初始化</el-button> -->
             <el-button
               type="primary"
               size="large"
-              style="width: 46%; margin-left: 8%"
+              style="width: 33%;"
               @click="submitForm"
             >登 录</el-button>
           </el-form-item>
         </el-form>
       </div>
       <div class="login_panel_right" />
-      <div class="login_panel_foot">
+      <!-- <div class="login_panel_foot">
         <div class="links">
           <a href="http://doc.henrongyi.top/" target="_blank">
             <img src="@/assets/docs.png" class="link-icon">
@@ -103,8 +103,8 @@
         </div>
         <div class="copyright">
           <BottomInfo />
-        </div>
-      </div>
+        </div> -->
+      <!-- </div> -->
     </div>
   </div>
 </template>
@@ -117,13 +117,13 @@ export default {
 
 <script setup>
 import { captcha } from '@/api/user'
-import { checkDB } from '@/api/initdb'
-import BottomInfo from '@/view/layout/bottomInfo/bottomInfo.vue'
+// import { checkDB } from '@/api/initdb'
+// import BottomInfo from '@/view/layout/bottomInfo/bottomInfo.vue'
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useUserStore } from '@/pinia/modules/user'
-const router = useRouter()
+// const router = useRouter()
 // 验证函数
 const checkUsername = (rule, value, callback) => {
   if (value.length < 5) {
@@ -164,8 +164,8 @@ const changeLock = () => {
 const loginForm = ref(null)
 const picPath = ref('')
 const loginFormData = reactive({
-  username: 'admin',
-  password: '123456',
+  username: '',
+  password: '',
   captcha: '',
   captchaId: '',
 })
@@ -204,20 +204,20 @@ const submitForm = () => {
 }
 
 // 跳转初始化
-const checkInit = async() => {
-  const res = await checkDB()
-  if (res.code === 0) {
-    if (res.data?.needInit) {
-      userStore.NeedInit()
-      router.push({ name: 'Init' })
-    } else {
-      ElMessage({
-        type: 'info',
-        message: '已配置数据库信息，无法初始化',
-      })
-    }
-  }
-}
+// const checkInit = async() => {
+//   const res = await checkDB()
+//   if (res.code === 0) {
+//     if (res.data?.needInit) {
+//       userStore.NeedInit()
+//       router.push({ name: 'Init' })
+//     } else {
+//       ElMessage({
+//         type: 'info',
+//         message: '已配置数据库信息，无法初始化',
+//       })
+//     }
+//   }
+// }
 
 </script>
 

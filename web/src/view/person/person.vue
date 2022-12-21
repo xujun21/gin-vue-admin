@@ -39,9 +39,9 @@
                   <close />
                 </el-icon>
               </p>
-              <p class="person-info">这个家伙很懒，什么都没有留下</p>
+              <!-- <p class="person-info">这个家伙很懒，什么都没有留下</p> -->
             </div>
-            <div class="user-information">
+            <!-- <div class="user-information">
               <ul>
                 <li>
                   <el-icon>
@@ -82,7 +82,7 @@
                   </li>
                 </el-tooltip>
               </ul>
-            </div>
+            </div> -->
           </div>
         </div>
       </el-col>
@@ -91,7 +91,7 @@
           <el-tabs v-model="activeName" @tab-click="handleClick">
             <el-tab-pane label="账号绑定" name="second">
               <ul>
-                <li>
+                <!-- <li>
                   <p class="title">密保手机</p>
                   <p class="desc">
                     已绑定手机:{{ userStore.userInfo.phone }}
@@ -111,7 +111,7 @@
                     未设置密保问题
                     <a href="javascript:void(0)">去设置</a>
                   </p>
-                </li>
+                </li> -->
                 <li>
                   <p class="title">修改密码</p>
                   <p class="desc">
