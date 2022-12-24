@@ -225,8 +225,8 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 	}
 
 	if *info.WithPrice == 0 {
-		xlsx.RemoveCol(sheet, "F")
 		xlsx.RemoveCol(sheet, "G")
+		xlsx.RemoveCol(sheet, "F")
 	}
 
 	err = xlsx.SaveAs(fileName)
