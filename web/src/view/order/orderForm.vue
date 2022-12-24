@@ -56,7 +56,7 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="运费:" prop="po_number">
-              <el-input-number v-model="formData.delivery_fee" :step="0.1" :precision="2" placeholder="Delivery Fee" @change="deliveryFeeChanged"/>
+              <el-input-number v-model="formData.delivery_fee" :step="0.1" :precision="2" placeholder="Delivery Fee" @change="deliveryFeeChanged" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -178,6 +178,20 @@
       </el-form>
     </div>
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="请选择下单客户（点击即选中）">
+      <div class="gva-search-box">
+        <el-form :inline="true" :model="searchInfo" class="demo-form-inline">
+          <el-form-item label="客户公司名">
+            <el-input v-model="searchInfo.customer_company_name" placeholder="搜索条件" />
+          </el-form-item>
+          <el-form-item label="客户联系人">
+            <el-input v-model="searchInfo.customer_contact_name" placeholder="搜索条件" />
+          </el-form-item>
+          <el-form-item>
+            <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
+            <el-button size="small" icon="refresh" @click="onReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
       <div class="gva-table-box">
         <el-table ref="singleTable" highlight-current-row :data="tableData" style="width: 100%" tooltip-effect="dark" row-key="ID" @current-change="selectedChange">
           <el-table-column align="left" label="客户ID" prop="ID" width="120" />
@@ -225,7 +239,7 @@ import {
 } from '@/api/company'
 
 import {
-  Edit, Share, Search
+  Search
 } from '@element-plus/icons-vue'
 
 // 自动获取字典
@@ -238,12 +252,28 @@ const orderTotal = ref(0)
 const handDiscount = ref(0)
 const deliveryFee = ref(0)
 
+// 搜索
+const onSubmit = () => {
+  page.value = 1
+  pageSize.value = 10
+  if (searchInfo.value.is_locked === '') {
+    searchInfo.value.is_locked = null
+  }
+  getCompanyData()
+}
+
+// 重置
+const onReset = () => {
+  searchInfo.value = {}
+  getCompanyData()
+}
+
 const discountChanged = (val) => {
-  formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total'] * 100)) 
-                                + handDiscount.value - Math.round(val * 100)) / 100
+  formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total'] * 100)) +
+                                handDiscount.value - Math.round(val * 100)) / 100
 
   // 更新
-  handDiscount.value = Math.round(val*100)
+  handDiscount.value = Math.round(val * 100)
 
   if (val < 0) {
     ElMessage({
@@ -270,9 +300,9 @@ const deliveryFeeChanged = (val) => {
   // console.log( (Math.round(Number.parseFloat(formData.value['order_total']) * 100)
   //             - deliveryFee.value
   //             + Math.round(val * 100)) / 100)
-  formData.value['order_total'] =  (Math.round(Number.parseFloat(formData.value['order_total']) * 100)
-              - deliveryFee.value
-              + Math.round(val * 100)) / 100
+  formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total']) * 100) -
+              deliveryFee.value +
+              Math.round(val * 100)) / 100
   deliveryFee.value = Math.round(val * 100)
 
   if (val < 0) {
@@ -293,9 +323,17 @@ const page = ref(1)
 const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
-const searchInfo = ref()
+const searchInfo = ref({})
 
-const companySelected = ref({ id: 0, company_name: '', contact_name: '' })
+// address
+// city
+// company_name
+// contact_name
+// note
+// phone
+// postcode
+
+const companySelected = ref({ id: 0, company_name: '', contact_name: '', address: '', city: '', note: '', phone: '', postcode: '' })
 
 // 分页
 const handleSizeChange = (val) => {
@@ -316,8 +354,19 @@ const selectedChange = (row) => {
       companySelected.value['company_name'] = row[key]
     } else if (key === 'contact_name') {
       companySelected.value['contact_name'] = row[key]
+    } else if (key === 'address') {
+      companySelected.value['address'] = row[key]
+    } else if (key === 'city') {
+      companySelected.value['city'] = row[key]
+    } else if (key === 'note') {
+      companySelected.value['note'] = row[key]
+    } else if (key === 'phone') {
+      companySelected.value['phone'] = row[key]
+    } else if (key === 'postcode') {
+      companySelected.value['postcode'] = row[key]
     }
   }
+  // console.log(row)
 }
 
 const dialogFormVisible = ref(false)
@@ -395,9 +444,9 @@ const init = async() => {
     if (res.code === 0) {
       formData.value = res.data.reord
       type.value = 'update'
-      orderTotal.value = Math.round(res.data.reord['order_total']*100)
-      handDiscount.value = Math.round(res.data.reord['hand_discount']*100)
-      deliveryFee.value = Math.round(res.data.reord['delivery_fee']*100)
+      orderTotal.value = Math.round(res.data.reord['order_total'] * 100)
+      handDiscount.value = Math.round(res.data.reord['hand_discount'] * 100)
+      deliveryFee.value = Math.round(res.data.reord['delivery_fee'] * 100)
     }
   } else {
     type.value = 'create'
@@ -453,10 +502,28 @@ const enterDialog = () => {
       message: ('请选中一行'),
     })
   } else {
-    console.log(companySelected)
     formData.value['customer_company_name'] = companySelected.value['company_name']
     formData.value['customer_contact_name'] = companySelected.value['contact_name']
     formData.value['customer_id'] = companySelected.value['id']
+    formData.value['bill_to'] = companySelected.value['company_name']
+    formData.value['bill_to_contact_name'] = companySelected.value['contact_name']
+    formData.value['bill_to_address'] = companySelected.value['address']
+    formData.value['bill_to_phone'] = companySelected.value['phone']
+    formData.value['bill_to_city'] = companySelected.value['city']
+    formData.value['bill_to_postcode'] = companySelected.value['postcode']
+
+    if (companySelected.value['note'] !== '') {
+      formData.value['ship_to'] = companySelected.value['note']
+    } else {
+      formData.value['ship_to'] = companySelected.value['company_name']
+    }
+
+    formData.value['ship_to_contact_name'] = companySelected.value['contact_name']
+    formData.value['ship_to_address'] = companySelected.value['address']
+    formData.value['ship_to_phone'] = companySelected.value['phone']
+    formData.value['ship_to_city'] = companySelected.value['city']
+    formData.value['ship_to_postcode'] = companySelected.value['postcode']
+
     closeDialog()
   }
 }

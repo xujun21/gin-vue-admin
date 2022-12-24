@@ -211,6 +211,7 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 		xlsx.SetCellStyle(sheet, "D"+iStr, "D"+iStr, dateStyle[index])
 		xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, numStyle[index])
 		xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, moneyStyle[index])
+		xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, strStyle[index])
 
 		xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
 		xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
@@ -220,10 +221,12 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 		}
 		xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
 		xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
+		xlsx.SetCellValue(sheet, "G"+iStr, prods[i].Barcode)
 	}
 
 	if *info.WithPrice == 0 {
 		xlsx.RemoveCol(sheet, "F")
+		xlsx.RemoveCol(sheet, "G")
 	}
 
 	err = xlsx.SaveAs(fileName)

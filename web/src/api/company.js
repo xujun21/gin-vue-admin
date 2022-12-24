@@ -89,6 +89,7 @@ export const findCompany = (params) => {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /comp/getCompanyList [get]
 export const getCompanyList = (params) => {
+  console.log(params)
   return service({
     url: '/comp/getCompanyList',
     method: 'get',
