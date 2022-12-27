@@ -220,7 +220,7 @@
         <el-table-column align="left" label="客户公司名" prop="customer_company_name" width="200" />
         <el-table-column align="right" label="商品数量" prop="quantity" width="80" />
         <el-table-column align="right" label="货款小计" prop="subtotal" width="100" :formatter="formatCurrency" />
-        <el-table-column align="right" label="税金" prop="vat" width="80" :formatter="formatCurrency" />
+        <el-table-column align="right" label="税金" prop="vat" width="100" :formatter="formatCurrency" />
         <el-table-column align="right" label="运费" prop="delivery_fee" width="80" :formatter="formatCurrency" />
         <el-table-column align="right" label="自动折扣" prop="discount" width="80" :formatter="formatCurrency" />
         <el-table-column align="right" label="手工折扣" prop="hand_discount" width="80" :formatter="formatCurrency" />
