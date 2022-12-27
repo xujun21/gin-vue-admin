@@ -377,7 +377,7 @@ const formData = ref({
   invoice_no: '',
   payment_method: '',
   po_number: '',
-  invoice_date: new Date(),
+  invoice_date: '',
   bill_to: '',
   ship_to: '',
   quantity: 0,

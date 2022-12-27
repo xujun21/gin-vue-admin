@@ -303,7 +303,7 @@ const upHandleCurrentChange = (val) => {
 
 // 查询
 const getUploadData = async() => {
-  upSearchInfo.value['order_id'] = orderId
+  upSearchInfo.value['orderId'] = orderId
 
   const table = await getUploadSubOrderList({ page: upPage.value, pageSize: upPageSize.value, ...upSearchInfo.value })
   if (table.code === 0) {

@@ -89,6 +89,7 @@ export const findUploadSubOrder = (params) => {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /upSubOrd/getUploadSubOrderList [get]
 export const getUploadSubOrderList = (params) => {
+  console.log(params)
   return service({
     url: '/upSubOrd/getUploadSubOrderList',
     method: 'get',
