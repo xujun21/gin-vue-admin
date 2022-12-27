@@ -350,9 +350,13 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 		xlsx.MergeCell(sheet, "S"+iStr, "T"+iStr)
 		xlsx.SetCellFloat(sheet, "S"+iStr, *subOrderList[i].Price, 2, 64)
 		xlsx.MergeCell(sheet, "U"+iStr, "V"+iStr)
-		xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Sub_Vat, 2, 64)
+		//xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Sub_Vat, 2, 64)
+		xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Vat, 2, 64) // 显示单件VAT
+
 		xlsx.MergeCell(sheet, "W"+iStr, "X"+iStr)
-		xlsx.SetCellFloat(sheet, "W"+iStr, *subOrderList[i].Sub_total, 2, 64)
+		//xlsx.SetCellFloat(sheet, "W"+iStr, *subOrderList[i].Sub_total, 2, 64)
+		tmpTotal, _ := decimal.NewFromFloat(*subOrderList[i].Sub_total).Add(decimal.NewFromFloat(*subOrderList[i].Sub_Vat)).Float64()
+		xlsx.SetCellFloat(sheet, "W"+iStr, tmpTotal, 2, 64) // TOTAL=（单价+单件VAT）*数量
 	}
 
 	bigStrStyle, err := xlsx.NewStyle(`{"font":{"bold":false,"italic":false,"size":11}}`)
@@ -481,9 +485,13 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 		xlsx.MergeCell(sheet, "S"+iStr, "T"+iStr)
 		xlsx.SetCellFloat(sheet, "S"+iStr, *subOrderList[i].Price, 2, 64)
 		xlsx.MergeCell(sheet, "U"+iStr, "V"+iStr)
-		xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Sub_Vat, 2, 64)
+		//xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Sub_Vat, 2, 64)
+		xlsx.SetCellFloat(sheet, "U"+iStr, *subOrderList[i].Vat, 2, 64) // 显示单件VAT
+
 		xlsx.MergeCell(sheet, "W"+iStr, "X"+iStr)
-		xlsx.SetCellFloat(sheet, "W"+iStr, *subOrderList[i].Sub_total, 2, 64)
+		//xlsx.SetCellFloat(sheet, "W"+iStr, *subOrderList[i].Sub_total, 2, 64)
+		tmpTotal, _ := decimal.NewFromFloat(*subOrderList[i].Sub_total).Add(decimal.NewFromFloat(*subOrderList[i].Sub_Vat)).Float64()
+		xlsx.SetCellFloat(sheet, "W"+iStr, tmpTotal, 2, 64) // TOTAL=（单价+单件VAT）*数量
 	}
 
 	bigStrStyle, err := xlsx.NewStyle(`{"font":{"bold":false,"italic":false,"size":11}}`)
