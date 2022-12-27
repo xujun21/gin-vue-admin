@@ -256,7 +256,9 @@ func (ordService *OrderService) CalcOrder(orderId *int) (err error) {
 		ordSubTotal += *subOrderList[i].Sub_total
 		ordQtyTotal += subOrderList[i].Quantity
 		ordVatTotal += *subOrderList[i].Sub_Vat
-		ordDiscountTotal += *subOrderList[i].Discount_total
+		if subOrderList[i].Discount_total != nil {
+			ordDiscountTotal += *subOrderList[i].Discount_total
+		}
 	}
 	ord.Subtotal = &ordSubTotal
 	ord.Quantity = ordQtyTotal

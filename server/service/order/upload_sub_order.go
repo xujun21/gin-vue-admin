@@ -151,6 +151,10 @@ func (upSubOrdService *UploadSubOrderService) GetUploadSubOrderInfoList(info ord
 	if info.ProductCode != "" {
 		db = db.Where("product_code LIKE ?", "%"+info.ProductCode+"%")
 	}
+	if info.OrderId != nil {
+		db = db.Where("order_id = ?", info.OrderId)
+	}
+
 	err = db.Count(&total).Error
 	if err != nil {
 		return
@@ -172,7 +176,7 @@ func (upSubOrdService *UploadSubOrderService) GetUploadSubOrderInfoList(info ord
 
 func (upSubOrdService *UploadSubOrderService) DoExecImport(orderId orderReq.OrderIdReq) (err error) {
 	var uploadSubOrd []order.UploadSubOrder
-	if err := global.GVA_DB.Find(&uploadSubOrd).Where("order_id = ?", orderId.OrderId).Error; err != nil {
+	if err := global.GVA_DB.Where("order_id = ? and deleted_by = 0", orderId.OrderId).Find(&uploadSubOrd).Error; err != nil {
 		return err
 	}
 

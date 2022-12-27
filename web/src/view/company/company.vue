@@ -72,12 +72,14 @@
         </el-table-column>
         <el-table-column align="left" label="备注" prop="note" width="120" />
         -->
-        <el-table-column align="left" label="公司名称" prop="company_name" width="200" />
-        <el-table-column align="left" label="联系人" prop="contact_name" width="120" />
-        <el-table-column align="left" label="联系电话" prop="phone" width="120" />
-        <el-table-column align="left" label="地址" prop="address" width="120" />
+        <el-table-column align="left" label="公司名称 / 地址" width="400">
+          <template #default="scope">{{ scope.row.company_name }} <br> {{ scope.row.address }}</template>
+        </el-table-column>
+        <el-table-column align="left" label="联系人 / 电话" width="140">
+          <template #default="scope">{{ scope.row.contact_name }}  <br> {{ scope.row.phone }}</template>
+        </el-table-column>
         <el-table-column align="left" label="城市" prop="city" width="120" />
-        <el-table-column align="left" label="邮编" prop="postcode" width="80" />
+        <el-table-column align="left" label="邮编" prop="postcode" width="120" />
         <el-table-column align="left" label="SAGE" prop="sage" width="120" />
         <el-table-column align="left" label="按钮组">
           <template #default="scope">

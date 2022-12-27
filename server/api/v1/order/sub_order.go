@@ -263,5 +263,7 @@ func (subOrdApi *SubOrderApi) AddSubOrderByProductIds(c *gin.Context) {
 	if err := ordService.CalcOrder(&orderId); err != nil {
 		global.GVA_LOG.Error("更新订单失败!", zap.Error(err))
 		response.FailWithMessage("更新订单失败", c)
+	} else {
+		println("更新订单成功")
 	}
 }
