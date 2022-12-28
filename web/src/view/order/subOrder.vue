@@ -130,7 +130,7 @@
       <el-button size="small" type="primary" @click="productBack">取消</el-button>
     </el-dialog>
 
-    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="修改商品数量">
+    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="修改商品数量/价格">
       <el-form ref="elFormRef" :model="formData" label-position="right" :rules="rule" label-width="100px">
         <el-form-item label="商品编号:" prop="product_code">
           <el-input v-model="formData.product_code" readonly />
@@ -142,19 +142,19 @@
           <el-input v-model="formData.product_name_en" readonly />
         </el-form-item>
         <el-form-item label="价格:" prop="price">
-          <el-input v-model="formData.price" style="width:100%" readonly />
+          <el-input-number v-model="formData.price" :step="0.1" @change="priceChanged" />
         </el-form-item>
         <el-form-item label="货款小计:" prop="sub_total">
           <el-input v-model="formData.sub_total" style="width:100%" readonly />
         </el-form-item>
         <el-form-item label="税:" prop="vat">
-          <el-input v-model="formData.vat" style="width:100%" readonly />
+          <el-input-number v-model="formData.vat" :step="0.1" @change="vatChanged" />
         </el-form-item>
         <el-form-item label="税款小计:" prop="vat">
           <el-input v-model="formData.sub_vat" style="width:100%" readonly />
         </el-form-item>
         <el-form-item label="单件折扣:" prop="discount">
-          <el-input v-model="formData.discount" style="width:100%" readonly />
+          <el-input-number v-model="formData.discount" :step="0.1" @change="discountChanged" />
         </el-form-item>
         <el-form-item label="折扣小计:" prop="discount_total">
           <el-input v-model="formData.discount_total" style="width:100%" readonly />
@@ -221,7 +221,6 @@ export default {
 
 <script setup>
 import {
-  createSubOrder,
   deleteSubOrder,
   deleteSubOrderByIds,
   updateSubOrder,
@@ -237,7 +236,6 @@ import {
 
 import { useRoute, useRouter } from 'vue-router'
 
-
 // 全量引入格式化工具 请按需保留
 import { formatDate, formatDateOnly, formatCurrency } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -245,7 +243,7 @@ import { ref, reactive } from 'vue'
 import { fix } from 'mathjs'
 
 import { useUserStore } from '@/pinia/modules/user'
-import { exportExcel, loadExcelData, downloadTemplate } from '@/api/excel'
+import { downloadTemplate } from '@/api/excel'
 import {
   getUploadSubOrderList,
   doExecImport
@@ -678,6 +676,48 @@ const enterDialog = async() => {
 const productBack = () => {
   productDialogVisible.value = false
   isDisabled.value = true
+}
+
+const priceChanged = (price) => {
+  if (price < 0) {
+    ElMessage({
+      type: 'error',
+      message: '价格不能小于0'
+    })
+    isDisabled.value = true
+    return
+  } else {
+    formData.value['sub_total'] = fix(price * formData.value['quantity'], 2)
+    isDisabled.value = false
+  }
+}
+
+const vatChanged = (vat) => {
+  if (vat < 0) {
+    ElMessage({
+      type: 'error',
+      message: '税不能小于0'
+    })
+    isDisabled.value = true
+    return
+  } else {
+    formData.value['sub_vat'] = fix(vat * formData.value['quantity'], 2)
+    isDisabled.value = false
+  }
+}
+
+const discountChanged = (discount) => {
+  if (discount < 0) {
+    ElMessage({
+      type: 'error',
+      message: '折扣不能小于0'
+    })
+    isDisabled.value = true
+    return
+  } else {
+    formData.value['discount_total'] = fix(discount * formData.value['quantity'], 2)
+    isDisabled.value = false
+  }
 }
 
 const qtyChanged = (qty) => {

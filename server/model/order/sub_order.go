@@ -17,7 +17,7 @@ type SubOrder struct {
 	Exp_date        *time.Time `json:"exp_date" form:"exp_date" gorm:"column:exp_date;comment:;"`
 	Package         string     `json:"package" form:"package" gorm:"column:package;comment:;"`
 	Price           *float64   `json:"price" form:"price" gorm:"column:price;comment:;"`
-	Quantity        uint       `json:"quantity" form:"quantity" gorm:"column:quantity;comment:;"`
+	Quantity        *int       `json:"quantity" form:"quantity" gorm:"column:quantity;comment:;"`
 	Vat             *float64   `json:"vat" form:"vat" gorm:"column:vat;comment:;"`
 	Sub_Vat         *float64   `json:"sub_vat" form:"sub_vat" gorm:"column:sub_vat;comment:;"`
 	Sub_total       *float64   `json:"sub_total" form:"sub_total" gorm:"column:sub_total;comment:商品金额;"`

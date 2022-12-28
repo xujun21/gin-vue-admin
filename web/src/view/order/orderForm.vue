@@ -325,14 +325,6 @@ const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
 
-// address
-// city
-// company_name
-// contact_name
-// note
-// phone
-// postcode
-
 const companySelected = ref({ id: 0, company_name: '', contact_name: '', address: '', city: '', note: '', phone: '', postcode: '' })
 
 // 分页
@@ -377,7 +369,7 @@ const formData = ref({
   invoice_no: '',
   payment_method: '',
   po_number: '',
-  invoice_date: '',
+  invoice_date: null,
   bill_to: '',
   ship_to: '',
   quantity: 0,

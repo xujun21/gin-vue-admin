@@ -11,6 +11,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type OrderService struct {
@@ -249,19 +250,19 @@ func (ordService *OrderService) CalcOrder(orderId *int) (err error) {
 	ordVatTotal = 0
 	ordDiscountTotal = 0
 
-	var ordQtyTotal uint
+	var ordQtyTotal int
 	ordQtyTotal = 0
 
 	for i, j := 0, len(subOrderList); i < j; i++ {
 		ordSubTotal += *subOrderList[i].Sub_total
-		ordQtyTotal += subOrderList[i].Quantity
+		ordQtyTotal += *subOrderList[i].Quantity
 		ordVatTotal += *subOrderList[i].Sub_Vat
 		if subOrderList[i].Discount_total != nil {
 			ordDiscountTotal += *subOrderList[i].Discount_total
 		}
 	}
 	ord.Subtotal = &ordSubTotal
-	ord.Quantity = ordQtyTotal
+	ord.Quantity = &ordQtyTotal
 	ord.Vat = &ordVatTotal
 	ord.Discount = &ordDiscountTotal
 
@@ -287,7 +288,7 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 	}
 
 	var subOrderList []order.SubOrder
-	if err = global.GVA_DB.Where("order_id = ?", orderId).Find(&subOrderList).Error; err != nil {
+	if err = global.GVA_DB.Where("order_id = ?", orderId).Order("product_code asc").Find(&subOrderList).Error; err != nil {
 		return err
 	}
 
@@ -309,11 +310,11 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 	xlsx.SetCellStr(sheet, "I12", ord.Ship_to_phone)
 	datStyle, _ := xlsx.NewStyle(`{"custom_number_format":"dd/mm/yyyy;@"}`)
 	xlsx.SetCellStyle(sheet, "U6", "U6", datStyle)
-	xlsx.SetCellValue(sheet, "U6", ord.Order_date.Format("02/01/2006"))
+	xlsx.SetCellValue(sheet, "U6", returnDateStringOrNull(ord.Order_date))
 
 	xlsx.SetCellStr(sheet, "U7", ord.Po_number)
 	xlsx.SetCellStyle(sheet, "U8", "U8", datStyle)
-	xlsx.SetCellValue(sheet, "U8", ord.Invoice_date.Format("02/01/2006"))
+	xlsx.SetCellValue(sheet, "U8", returnDateStringOrNull(ord.Invoice_date))
 	xlsx.SetCellStr(sheet, "U9", ord.Invoice_no)
 	xlsx.SetCellStr(sheet, "U10", ord.Payment_method)
 
@@ -346,7 +347,7 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 		xlsx.SetCellStr(sheet, "L"+iStr, subOrderList[i].Package)
 		xlsx.MergeCell(sheet, "O"+iStr, "Q"+iStr)
 		xlsx.SetCellValue(sheet, "O"+iStr, subOrderList[i].Exp_date.Format("02/01/2006"))
-		xlsx.SetCellInt(sheet, "R"+iStr, int(subOrderList[i].Quantity))
+		xlsx.SetCellInt(sheet, "R"+iStr, *subOrderList[i].Quantity)
 		xlsx.MergeCell(sheet, "S"+iStr, "T"+iStr)
 		xlsx.SetCellFloat(sheet, "S"+iStr, *subOrderList[i].Price, 2, 64)
 		xlsx.MergeCell(sheet, "U"+iStr, "V"+iStr)
@@ -375,7 +376,7 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 	xlsx.SetCellStyle(sheet, "S"+iStr, "S"+iStr3, bigStrStyle)   // SUB_XXX
 	xlsx.SetCellStyle(sheet, "V"+iStr, "V"+iStr3, bigMoneyStyle) // SUB_XXX.Value
 
-	xlsx.SetCellValue(sheet, "R"+iStr, ord.Quantity)
+	xlsx.SetCellValue(sheet, "R"+iStr, *ord.Quantity)
 	xlsx.MergeCell(sheet, "S"+iStr, "U"+iStr)
 	xlsx.SetCellStr(sheet, "S"+iStr, "Subtotal:")
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
@@ -422,7 +423,7 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 	}
 
 	var subOrderList []order.SubOrder
-	if err = global.GVA_DB.Where("order_id = ?", orderId).Find(&subOrderList).Error; err != nil {
+	if err = global.GVA_DB.Where("order_id = ?", orderId).Order("product_code asc").Find(&subOrderList).Error; err != nil {
 		return err
 	}
 
@@ -444,11 +445,11 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 	xlsx.SetCellStr(sheet, "I12", ord.Ship_to_phone)
 	datStyle, _ := xlsx.NewStyle(`{"custom_number_format":"dd/mm/yyyy;@"}`)
 	xlsx.SetCellStyle(sheet, "U6", "U6", datStyle)
-	xlsx.SetCellValue(sheet, "U6", ord.Order_date.Format("02/01/2006"))
+	xlsx.SetCellValue(sheet, "U6", returnDateStringOrNull(ord.Order_date))
 
 	xlsx.SetCellStr(sheet, "U7", ord.Po_number)
 	xlsx.SetCellStyle(sheet, "U8", "U8", datStyle)
-	xlsx.SetCellValue(sheet, "U8", ord.Invoice_date.Format("02/01/2006"))
+	xlsx.SetCellValue(sheet, "U8", returnDateStringOrNull(ord.Invoice_date))
 	xlsx.SetCellStr(sheet, "U9", ord.Invoice_no)
 	xlsx.SetCellStr(sheet, "U10", ord.Payment_method)
 
@@ -481,7 +482,7 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 		xlsx.SetCellStr(sheet, "L"+iStr, subOrderList[i].Package)
 		xlsx.MergeCell(sheet, "O"+iStr, "Q"+iStr)
 		xlsx.SetCellValue(sheet, "O"+iStr, subOrderList[i].Exp_date.Format("02/01/2006"))
-		xlsx.SetCellInt(sheet, "R"+iStr, int(subOrderList[i].Quantity))
+		xlsx.SetCellInt(sheet, "R"+iStr, *subOrderList[i].Quantity)
 		xlsx.MergeCell(sheet, "S"+iStr, "T"+iStr)
 		xlsx.SetCellFloat(sheet, "S"+iStr, *subOrderList[i].Price, 2, 64)
 		xlsx.MergeCell(sheet, "U"+iStr, "V"+iStr)
@@ -510,7 +511,7 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 	xlsx.SetCellStyle(sheet, "S"+iStr, "S"+iStr3, bigStrStyle)   // SUB_XXX
 	xlsx.SetCellStyle(sheet, "V"+iStr, "V"+iStr3, bigMoneyStyle) // SUB_XXX.Value
 
-	xlsx.SetCellValue(sheet, "R"+iStr, ord.Quantity)
+	xlsx.SetCellValue(sheet, "R"+iStr, *ord.Quantity)
 	xlsx.MergeCell(sheet, "S"+iStr, "U"+iStr)
 	xlsx.SetCellStr(sheet, "S"+iStr, "Subtotal:")
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
@@ -560,7 +561,7 @@ func (ordService *OrderService) ExportDeliveryNoteExcel(orderId *int, fileName s
 	}
 
 	var subOrderList []order.SubOrder
-	if err = global.GVA_DB.Where("order_id = ?", orderId).Find(&subOrderList).Error; err != nil {
+	if err = global.GVA_DB.Where("order_id = ?", orderId).Order("product_code asc").Find(&subOrderList).Error; err != nil {
 		return err
 	}
 
@@ -582,11 +583,13 @@ func (ordService *OrderService) ExportDeliveryNoteExcel(orderId *int, fileName s
 	xlsx.SetCellStr(sheet, "I12", ord.Ship_to_phone)
 	datStyle, _ := xlsx.NewStyle(`{"custom_number_format":"dd/mm/yyyy;@"}`)
 	xlsx.SetCellStyle(sheet, "U6", "U6", datStyle)
-	xlsx.SetCellValue(sheet, "U6", ord.Order_date.Format("02/01/2006"))
+	xlsx.SetCellValue(sheet, "U6", returnDateStringOrNull(ord.Order_date))
 
 	xlsx.SetCellStr(sheet, "U7", ord.Po_number)
 	xlsx.SetCellStyle(sheet, "U8", "U8", datStyle)
-	xlsx.SetCellValue(sheet, "U8", ord.Invoice_date.Format("02/01/2006"))
+
+	xlsx.SetCellValue(sheet, "U8", returnDateStringOrNull(ord.Invoice_date))
+
 	xlsx.SetCellStr(sheet, "U9", ord.Invoice_no)
 	xlsx.SetCellStr(sheet, "U10", ord.Payment_method)
 
@@ -618,7 +621,7 @@ func (ordService *OrderService) ExportDeliveryNoteExcel(orderId *int, fileName s
 		xlsx.MergeCell(sheet, "S"+iStr, "U"+iStr)
 		xlsx.SetCellValue(sheet, "S"+iStr, subOrderList[i].Exp_date.Format("02/01/2006"))
 		xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
-		xlsx.SetCellInt(sheet, "V"+iStr, int(subOrderList[i].Quantity))
+		xlsx.SetCellInt(sheet, "V"+iStr, *subOrderList[i].Quantity)
 	}
 
 	bigNumStyle, err := xlsx.NewStyle(`{"font":{"bold":false,"italic":false,"size":11}}`)
@@ -631,7 +634,7 @@ func (ordService *OrderService) ExportDeliveryNoteExcel(orderId *int, fileName s
 
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
 	xlsx.SetCellStyle(sheet, "V"+iStr, "X"+iStr, bigNumStyle) // QTY
-	xlsx.SetCellValue(sheet, "V"+iStr, ord.Quantity)
+	xlsx.SetCellValue(sheet, "V"+iStr, *ord.Quantity)
 
 	err = xlsx.SaveAs(fileName)
 	return err
@@ -780,7 +783,7 @@ func (ordService *OrderService) ExportOrderExcel(info orderReq.OrderSearch, file
 			"SI",
 			company.Sage,
 			4000,
-			ord.Invoice_date.Format("02/01/2006"),
+			returnDateStringOrNull(ord.Invoice_date),
 			ord.Invoice_no,
 			"GOODS",
 			price2,
@@ -791,4 +794,12 @@ func (ordService *OrderService) ExportOrderExcel(info orderReq.OrderSearch, file
 
 	err = xlsx.SaveAs(fileName)
 	return err
+}
+
+func returnDateStringOrNull(val *time.Time) string {
+	if val == nil {
+		return ""
+	} else {
+		return val.Format("02/01/2006")
+	}
 }

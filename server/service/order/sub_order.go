@@ -167,78 +167,62 @@ func (subOrdService *SubOrderService) AddSubOrderByProductIds(orderId *int, ids 
 		return err
 	} else {
 		if len(prodList) > 0 {
-			// 查询子订单表中，此订单下是否已经存在商品列表中的某些商品
-			var repeatedSubOrderList []order.SubOrder
-			err = global.GVA_DB.Where("order_id = ? and product_id in ?", orderId, ids.Ids).Find(&repeatedSubOrderList).Error
-			if err != nil {
-				return err
-			} else {
-				var subOrderList []order.SubOrder
-				var prodListOfReduceStore []uint // 存放需要扣减库存的商品id
-				for i, n := 0, len(prodList); i < n; i++ {
-					var prod = prodList[i]
-					// 判断此商品是否已经存在，存在则跳过，不存在才添加
-					isExist := false
-					for j, k := 0, len(repeatedSubOrderList); j < k; j++ {
-						if prod.ID == repeatedSubOrderList[j].Product_id {
-							isExist = true
-							break
-						}
-					}
-					if isExist {
-						continue
-					}
-					var subOrder order.SubOrder
-					subOrder.Order_id = orderId
-					subOrder.Product_name_cn = prod.Product_name_cn
-					subOrder.Product_id = prod.ID
-					subOrder.Product_code = prod.Code
-					subOrder.Price = prod.Price
-					subOrder.Product_name_en = prod.Product_name_en
-					subOrder.Sub_total = prod.Price // 默认为1个
-					subOrder.Exp_date = prod.Exp_date
-					subOrder.Package = prod.Package
-					subOrder.Quantity = 1
-					subOrder.Vat = prod.Vat
-					subOrder.Sub_Vat = prod.Vat // 1个
+			var subOrderList []order.SubOrder
+			var prodListOfReduceStore []uint // 存放需要扣减库存的商品id
+			for i, n := 0, len(prodList); i < n; i++ {
+				var prod = prodList[i]
 
-					subOrder.CreatedBy = createdBy
+				var subOrder order.SubOrder
+				subOrder.Order_id = orderId
+				subOrder.Product_name_cn = prod.Product_name_cn
+				subOrder.Product_id = prod.ID
+				subOrder.Product_code = prod.Code
+				subOrder.Price = prod.Price
+				subOrder.Product_name_en = prod.Product_name_en
+				subOrder.Sub_total = prod.Price // 默认为1个
+				subOrder.Exp_date = prod.Exp_date
+				subOrder.Package = prod.Package
+				cnt := 1
+				subOrder.Quantity = &cnt
+				subOrder.Vat = prod.Vat
+				subOrder.Sub_Vat = prod.Vat // 1个
 
-					var compDiscountList []company.CompanyDiscount
-					if err = global.GVA_DB.Where("company_id = ? and product_id = ?",
-						ord.Customer_id, prod.ID).Find(&compDiscountList).Error; err != nil {
-						return err
-					}
+				subOrder.CreatedBy = createdBy
 
-					if len(compDiscountList) > 0 {
-						if len(compDiscountList) > 1 {
-							return errors.New("数据错误！单一客户的某一商品折扣记录超过1" + strconv.Itoa(len(compDiscountList)))
-						}
-						if len(compDiscountList) == 1 {
-							subOrder.Discount = compDiscountList[0].Discount // quantity = 1
-							subOrder.Discount_total = compDiscountList[0].Discount
-						}
-					} else {
-						zero, _ := decimal.Zero.Float64()
-						subOrder.Discount = &zero
-						subOrder.Discount_total = &zero
-					}
-
-					subOrderList = append(subOrderList, subOrder)
-					// 扣减库存
-					prodListOfReduceStore = append(prodListOfReduceStore, prod.ID)
+				var compDiscountList []company.CompanyDiscount
+				if err = global.GVA_DB.Where("company_id = ? and product_id = ?",
+					ord.Customer_id, prod.ID).Find(&compDiscountList).Error; err != nil {
+					return err
 				}
-				err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-					if err := global.GVA_DB.CreateInBatches(subOrderList, len(subOrderList)).Error; err != nil {
-						return err
-					}
 
-					if err = global.GVA_DB.Exec("update product set store = store - 1 where ID in ?", prodListOfReduceStore).Error; err != nil {
-						return err
+				if len(compDiscountList) > 0 {
+					if len(compDiscountList) > 1 {
+						return errors.New("数据错误！单一客户的某一商品折扣记录超过1" + strconv.Itoa(len(compDiscountList)))
 					}
-					return nil
-				})
+					if len(compDiscountList) == 1 {
+						subOrder.Discount = compDiscountList[0].Discount // quantity = 1
+						subOrder.Discount_total = compDiscountList[0].Discount
+					}
+				} else {
+					zero, _ := decimal.Zero.Float64()
+					subOrder.Discount = &zero
+					subOrder.Discount_total = &zero
+				}
+
+				subOrderList = append(subOrderList, subOrder)
+				// 扣减库存
+				prodListOfReduceStore = append(prodListOfReduceStore, prod.ID)
 			}
+			err = global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+				if err := global.GVA_DB.CreateInBatches(subOrderList, len(subOrderList)).Error; err != nil {
+					return err
+				}
+
+				if err = global.GVA_DB.Exec("update product set store = store - 1 where ID in ?", prodListOfReduceStore).Error; err != nil {
+					return err
+				}
+				return nil
+			})
 		}
 		return nil
 	}

@@ -117,7 +117,7 @@ func (upSubOrdService *UploadSubOrderService) ParseExcel2InfoList(orderId *int) 
 				uploadSubOrder.ExpDate = product.Exp_date
 				uploadSubOrder.ProductNameEn = product.Product_name_en
 				uploadSubOrder.Store = product.Store
-				uploadSubOrder.Quantity = uint(quantity)
+				uploadSubOrder.Quantity = &quantity
 				uploadSubOrder.OrderId = orderId
 
 				if err := global.GVA_DB.Create(&uploadSubOrder).Error; err != nil {
@@ -200,11 +200,11 @@ func (upSubOrdService *UploadSubOrderService) DoExecImport(orderId orderReq.Orde
 			}
 
 			// 查询子订单表中，此订单下是否已经存在此商品
-			var repeatedSubOrderList []order.SubOrder
-			err = global.GVA_DB.Where("order_id = ? and product_id = ?", orderId.OrderId, productId).Find(&repeatedSubOrderList).Error
-			if len(repeatedSubOrderList) > 0 {
-				continue // 已经存在，跳过此商品，不导入
-			}
+			//var repeatedSubOrderList []order.SubOrder
+			//err = global.GVA_DB.Where("order_id = ? and product_id = ?", orderId.OrderId, productId).Find(&repeatedSubOrderList).Error
+			//if len(repeatedSubOrderList) > 0 {
+			//	continue // 已经存在，跳过此商品，不导入
+			//}
 
 			var subOrder order.SubOrder // 需要创建的subOrder
 			ordId, _ := strconv.Atoi(orderId.OrderId)
@@ -214,14 +214,14 @@ func (upSubOrdService *UploadSubOrderService) DoExecImport(orderId orderReq.Orde
 			subOrder.Product_code = prod.Code
 			subOrder.Price = prod.Price
 			subOrder.Product_name_en = prod.Product_name_en
-			quantity := int(uploadSubOrd[i].Quantity)
-			subTotal, _ := decimal.NewFromFloat(*prod.Price).Mul(decimal.NewFromFloat(float64(quantity))).Float64()
+			quantity := uploadSubOrd[i].Quantity
+			subTotal, _ := decimal.NewFromFloat(*prod.Price).Mul(decimal.NewFromInt(int64(*quantity))).Float64()
 			subOrder.Sub_total = &subTotal
 			subOrder.Exp_date = prod.Exp_date
 			subOrder.Package = prod.Package
 			subOrder.Quantity = uploadSubOrd[i].Quantity
 			subOrder.Vat = prod.Vat
-			subVat, _ := decimal.NewFromFloat(*prod.Vat).Mul(decimal.NewFromFloat(float64(quantity))).Float64()
+			subVat, _ := decimal.NewFromFloat(*prod.Vat).Mul(decimal.NewFromInt(int64(*quantity))).Float64()
 			subOrder.Sub_Vat = &subVat
 
 			var compDiscountList []company.CompanyDiscount
@@ -235,7 +235,7 @@ func (upSubOrdService *UploadSubOrderService) DoExecImport(orderId orderReq.Orde
 				}
 				if len(compDiscountList) == 1 {
 					subOrder.Discount = compDiscountList[0].Discount
-					discount, _ := decimal.NewFromFloat(*compDiscountList[0].Discount).Mul(decimal.NewFromFloat(float64(quantity))).Float64()
+					discount, _ := decimal.NewFromFloat(*compDiscountList[0].Discount).Mul(decimal.NewFromInt(int64(*quantity))).Float64()
 					subOrder.Discount_total = &discount
 				}
 			}
