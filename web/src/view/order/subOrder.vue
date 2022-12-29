@@ -174,7 +174,8 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="dialogUploadVisible" title="确认上传的采购单商品及数量">
+    <el-dialog v-model="dialogUploadVisible" title="确认上传的采购单商品及数量" width="70%">
+      <template v-if="true"><div :style="{'color':'red'}">{{ uploadMemos }}</div></template>
       <el-table
         ref="uploadTable"
         style="width: 100%"
@@ -182,16 +183,33 @@
         :data="uploadData"
         row-key="ID"
       >
-        <el-table-column align="left" label="编号" prop="productCode" />
-        <el-table-column align="left" label="商品名" width="400">
+        <el-table-column align="left" label="编号" prop="productCode" width="80">
+          <template #default="scope"> <div :style="{'color':scope.row.memo=='2'? 'red':'green'}">{{
+            scope.row.productCode
+          }} </div></template>
+        </el-table-column>
+        <el-table-column align="center" label="状态" prop="quantity" witdh="80">
+          <template #default="scope"> <div :style="{'color':scope.row.memo!='0'? 'red':'green'}">{{
+            translateMemo(scope.row.memo)
+          }} </div></template>
+        </el-table-column>
+        <el-table-column align="right" label="数量" prop="quantity" witdh="50">
+          <template #default="scope"> <div :style="{'color':(scope.row.memo=='1' || scope.row.memo=='3')? 'red':'green'}">{{
+            scope.row.quantity
+          }} </div></template>
+        </el-table-column>
+        <el-table-column align="right" label="库存" width="60">
+          <template #default="scope"> <div :style="{'color':scope.row.memo=='1'? 'red':'green'}">{{
+            scope.row.store
+          }} </div></template>
+        </el-table-column>
+        <el-table-column align="left" label="商品名" width="480">
           <template #default="scope">{{ scope.row.productNameCn }}<br>{{ scope.row.productNameEn }}</template>
         </el-table-column>
         <!-- <el-table-column align="left" label="包装规格" prop="package" width="100" /> -->
         <el-table-column align="left" label="包装规格 / 保质期" width="100">
           <template #default="scope">{{ scope.row.package }}<br>{{ formatDateOnly(scope.row.expDate) }}</template>
         </el-table-column>
-        <el-table-column align="right" label="数量" prop="quantity" witdh="80" />>
-        <el-table-column align="right" label="库存量" prop="store" width="80" />
         <!-- <el-table-column align="right" label="商品价格" prop="price" width="80" :formatter="formatCurrency" />
         <el-table-column align="right" label="商品税" prop="vat" width="80" :formatter="formatCurrency" /> -->
       </el-table>
@@ -259,6 +277,21 @@ const upTotal = ref(0)
 const upPageSize = ref(10)
 const uploadData = ref([])
 const upSearchInfo = ref({})
+const uploadMemos = ref()
+
+// 0：正常；1：库存不足；2:商品编号不存在;3：商品数量填写异常
+const translateMemo = (memo) => {
+  switch (memo) {
+    case '0':
+      return 'OK'
+    case '1':
+      return '库存不足'
+    case '2':
+      return '商品编号不存在'
+    case '3':
+      return '商品数量填写异常'
+  }
+}
 
 const confirmUpload = (val) => {
   doImport()
@@ -311,7 +344,44 @@ const getUploadData = async() => {
     upPageSize.value = table.data.pageSize
   }
 
-  console.log(uploadData)
+  const allData = await getUploadSubOrderList({ page: 1, pageSize: 9999, ...upSearchInfo.value })
+  if (allData.code === 0) {
+    var all = allData.data.list
+    var overStoreErr = 0
+    var codeErr = 0
+    var quantityErr = 0
+    // 0：正常；1：库存不足；2:商品编号不存在;3：商品数量填写异常
+    for (var i = 0; i < all.length; i++) {
+      var rowData = all[i]
+      switch (rowData['memo']) {
+        case '1':
+          overStoreErr++
+          break
+        case '2':
+          codeErr++
+          break
+        case '3':
+          quantityErr++
+          break
+        default:
+      }
+    }
+    if (overStoreErr + codeErr + quantityErr > 0) {
+      uploadMemos.value = '上传数据异常统计：上传总行数' + all.length + '，其中'
+      if (overStoreErr > 0) {
+        uploadMemos.value = uploadMemos.value + overStoreErr + '行库存不足，'
+      }
+      if (codeErr > 0) {
+        uploadMemos.value = uploadMemos.value + codeErr + '行商品编号不存在，'
+      }
+      if (quantityErr > 0) {
+        uploadMemos.value = uploadMemos.value + quantityErr + '行商品数量填写异常，'
+      }
+      uploadMemos.value = uploadMemos.value + '请检查。'
+    } else {
+      uploadMemos.value = ''
+    }
+  }
 }
 
 const dialogUploadVisible = ref(false)

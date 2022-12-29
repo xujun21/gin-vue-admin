@@ -18,6 +18,7 @@ type UploadSubOrder struct {
 	ExpDate       *time.Time `json:"expDate" form:"expDate" gorm:"column:exp_date;comment:;"`
 	Quantity      *int       `json:"quantity" form:"quantity" gorm:"column:quantity;comment:;"`
 	Store         *int       `json:"store" form:"store" gorm:"column:store;comment:;"`
+	Memo          string     `json:"memo" form:"memo" gorm:"column:memo;comment:0：正常；1：库存不足；2:商品编号不存在;3：商品数量填写异常"`
 	CreatedBy     uint       `gorm:"column:created_by;comment:创建者"`
 	UpdatedBy     uint       `gorm:"column:updated_by;comment:更新者"`
 	DeletedBy     uint       `gorm:"column:deleted_by;comment:删除者"`

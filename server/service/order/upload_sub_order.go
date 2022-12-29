@@ -101,15 +101,29 @@ func (upSubOrdService *UploadSubOrderService) ParseExcel2InfoList(orderId *int) 
 			continue
 		}
 
-		if len(row) > 4 {
-			var quantity int
-			quantity, _ = strconv.Atoi(row[4])
-			if quantity > 0 {
-				var uploadSubOrder order.UploadSubOrder
-				uploadSubOrder.ProductCode = row[0]
-				var product product2.Product
-				if err := global.GVA_DB.Where("code = ?", row[0]).Find(&product).Error; err != nil {
-					return err
+		var uploadSubOrder order.UploadSubOrder
+		uploadSubOrder.ProductCode = row[0]
+		var product product2.Product
+		if err := global.GVA_DB.Where("code = ?", row[0]).Find(&product).Error; err != nil {
+			return err
+		}
+		if product.ID == 0 { // 没找到此商品
+			uploadSubOrder.Memo = "2" // "商品编号不存在"
+			uploadSubOrder.ProductNameCn = row[1]
+			uploadSubOrder.OrderId = orderId
+		} else {
+
+			if len(row) > 4 {
+				var quantity int
+				quantity, _ = strconv.Atoi(row[4])
+				if quantity <= 0 {
+					uploadSubOrder.Memo = "3" // 商品数量填写异常
+				} else {
+					if quantity > *product.Store {
+						uploadSubOrder.Memo = "1" // 库存不足
+					} else {
+						uploadSubOrder.Memo = "0" // 正常
+					}
 				}
 				uploadSubOrder.ProductNameCn = product.Product_name_cn
 				uploadSubOrder.ProductId = product.ID
@@ -119,11 +133,14 @@ func (upSubOrdService *UploadSubOrderService) ParseExcel2InfoList(orderId *int) 
 				uploadSubOrder.Store = product.Store
 				uploadSubOrder.Quantity = &quantity
 				uploadSubOrder.OrderId = orderId
-
-				if err := global.GVA_DB.Create(&uploadSubOrder).Error; err != nil {
-					return err
-				}
+			} else {
+				uploadSubOrder.Memo = "3" // 商品数量填写异常
+				uploadSubOrder.ProductNameCn = row[1]
+				uploadSubOrder.OrderId = orderId
 			}
+		}
+		if err := global.GVA_DB.Create(&uploadSubOrder).Error; err != nil {
+			return err
 		}
 	}
 	return nil
