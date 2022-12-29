@@ -161,7 +161,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="手式扣税:" prop="hand_discount_vat">
+            <el-form-item label="手工扣税:" prop="hand_discount_vat">
               <el-input-number v-model="formData.hand_discount_vat" :step="0.1" :precision="2" @change="discountVatChanged" />
             </el-form-item>
           </el-col>
