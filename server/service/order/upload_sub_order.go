@@ -92,6 +92,9 @@ func (upSubOrdService *UploadSubOrderService) ParseExcel2InfoList(orderId *int) 
 		if err != nil {
 			return err
 		}
+		if row == nil {
+			continue
+		}
 
 		// 判断数据有效性
 		if !bFoundData {
