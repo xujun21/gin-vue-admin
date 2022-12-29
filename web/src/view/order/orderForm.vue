@@ -185,7 +185,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="请选择下单客户（点击即选中）">
+    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="请选择下单客户（点击即选中）" width="60%">
       <div class="gva-search-box">
         <el-form :inline="true" :model="searchInfo" class="demo-form-inline">
           <el-form-item label="客户公司名">
