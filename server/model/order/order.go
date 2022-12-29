@@ -21,6 +21,7 @@ type Order struct {
 	Vat                   *float64   `json:"vat" form:"vat" gorm:"column:vat;comment:;"`
 	DeliveryFee           *float64   `json:"delivery_fee" form:"delivery_fee" gorm:"column:delivery_fee;comment:运费;"`
 	Discount              *float64   `json:"discount" form:"discount" gorm:"column:discount;comment:;"`
+	HandDiscountVat       *float64   `json:"hand_discount_vat" form:"hand_discount_vat" gorm:"column:hand_discount_vat;comment:;"`
 	Order_total           *float64   `json:"order_total" form:"order_total" gorm:"column:order_total;comment:;"`
 	Bill_to_contact_name  string     `json:"bill_to_contact_name" form:"bill_to_contact_name" gorm:"column:bill_to_contact_name;comment:;"`
 	Bill_to_address       string     `json:"bill_to_address" form:"bill_to_address" gorm:"column:bill_to_address;comment:;"`

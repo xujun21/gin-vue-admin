@@ -394,7 +394,7 @@ func (ordService *OrderService) ExportInvoiceExcel(orderId *int, fileName string
 	xlsx.MergeCell(sheet, "S"+iStr, "U"+iStr)
 	xlsx.SetCellStr(sheet, "S"+iStr, "Discount:")
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
-	xlsx.SetCellValue(sheet, "V"+iStr, *ord.Discount+*ord.Hand_discount)
+	xlsx.SetCellValue(sheet, "V"+iStr, *ord.Discount+*ord.Hand_discount+*ord.HandDiscountVat)
 
 	i++
 	iStr = strconv.Itoa(14 + i)
@@ -529,7 +529,7 @@ func (ordService *OrderService) ExportConfirmExcel(orderId *int, fileName string
 	xlsx.MergeCell(sheet, "S"+iStr, "U"+iStr)
 	xlsx.SetCellStr(sheet, "S"+iStr, "Discount:")
 	xlsx.MergeCell(sheet, "V"+iStr, "X"+iStr)
-	xlsx.SetCellValue(sheet, "V"+iStr, *ord.Discount+*ord.Hand_discount)
+	xlsx.SetCellValue(sheet, "V"+iStr, *ord.Discount+*ord.Hand_discount+*ord.HandDiscountVat)
 
 	i++
 	iStr = strconv.Itoa(14 + i)
@@ -788,7 +788,7 @@ func (ordService *OrderService) ExportOrderExcel(info orderReq.OrderSearch, file
 			"GOODS",
 			price2,
 			t12,
-			*ord.Vat,
+			*ord.Vat - *ord.HandDiscountVat,
 		})
 	}
 

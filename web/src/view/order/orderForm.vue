@@ -161,6 +161,14 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
+            <el-form-item label="手式扣税:" prop="hand_discount_vat">
+              <el-input-number v-model="formData.hand_discount_vat" :step="0.1" :precision="2" @change="discountVatChanged" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="16">&nbsp;</el-col>
+          <el-col :span="8">
             <el-form-item label="订单总金额:" prop="order_total">
               <el-input v-model="formData.order_total" placeholder="自动计算" readonly />
             </el-form-item>
@@ -246,11 +254,13 @@ import {
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ref, reactive } from 'vue'
+import { fix } from 'mathjs'
 
 const isDisabled = ref(false)
 const orderTotal = ref(0)
 const handDiscount = ref(0)
 const deliveryFee = ref(0)
+const handDiscountVat = ref(0)
 
 // 搜索
 const onSubmit = () => {
@@ -286,6 +296,31 @@ const discountChanged = (val) => {
     ElMessage({
       type: 'error',
       message: '折扣不能大于订单总金额！'
+    })
+    isDisabled.value = true
+    return
+  }
+  isDisabled.value = false
+}
+
+const discountVatChanged = (val) => {
+  formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total'] * 100)) +
+                  handDiscountVat.value - Math.round(val * 100)) / 100
+
+  // 更新
+  handDiscountVat.value = Math.round(val * 100)
+
+  if (val < 0) {
+    ElMessage({
+      type: 'error',
+      message: '折扣税金不能小于0！'
+    })
+    isDisabled.value = true
+    return
+  } else if (val > orderTotal.value) {
+    ElMessage({
+      type: 'error',
+      message: '折扣税金不能大于订单总金额！'
     })
     isDisabled.value = true
     return
@@ -390,6 +425,7 @@ const formData = ref({
   ship_to_postcode: '',
   is_locked: false,
   hand_discount: 0,
+  hand_discount_vat: 0,
   customer_id: 0,
   customer_company_name: '',
   customer_contact_name: '',
@@ -439,6 +475,11 @@ const init = async() => {
       orderTotal.value = Math.round(res.data.reord['order_total'] * 100)
       handDiscount.value = Math.round(res.data.reord['hand_discount'] * 100)
       deliveryFee.value = Math.round(res.data.reord['delivery_fee'] * 100)
+      handDiscountVat.value = Math.round(res.data.reord['hand_discount_vat'] * 100)
+
+      res.data.reord['subtotal'] = fix(res.data.reord['subtotal'], 2)
+      res.data.reord['vat'] = fix(res.data.reord['vat'], 2)
+      res.data.reord['order_total'] = fix(res.data.reord['order_total'], 2)
     }
   } else {
     type.value = 'create'
