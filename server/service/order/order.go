@@ -271,6 +271,7 @@ func (ordService *OrderService) CalcOrder(orderId *int) (err error) {
 		Add(decimal.NewFromFloat(*ord.DeliveryFee)).
 		Sub(decimal.NewFromFloat(*ord.Discount)).
 		Sub(decimal.NewFromFloat(*ord.Hand_discount)).
+		Sub(decimal.NewFromFloat(*ord.HandDiscountVat)).
 		Float64()
 	ord.Order_total = &orderTotal
 
