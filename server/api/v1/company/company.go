@@ -169,3 +169,21 @@ func (compApi *CompanyApi) GetCompanyList(c *gin.Context) {
 		}, "获取成功", c)
 	}
 }
+
+func (compApi *CompanyApi) ExportCompanyExcel(c *gin.Context) {
+	var pageInfo companyReq.CompanySearch
+	err := c.ShouldBindQuery(&pageInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	filePath := global.GVA_CONFIG.Excel.Dir + "CompanyList.xlsx"
+	err = compService.ExportOrderExcel(pageInfo, filePath)
+	if err != nil {
+		global.GVA_LOG.Error("下载客户列表失败!", zap.Error(err))
+		response.FailWithMessage("下载客户列表失败", c)
+		return
+	}
+	c.Writer.Header().Add("success", "true")
+	c.File(filePath)
+}

@@ -1,10 +1,13 @@
 package company
 
 import (
+	"fmt"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/company"
 	companyReq "github.com/flipped-aurora/gin-vue-admin/server/model/company/request"
+	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
@@ -113,4 +116,89 @@ func (compService *CompanyService) GetCompanyInfoList(info companyReq.CompanySea
 	}
 	err = db.Limit(limit).Offset(offset).Find(&comps).Error
 	return comps, total, err
+}
+
+func (compService *CompanyService) ExportOrderExcel(info companyReq.CompanySearch, fileName string) (err error) {
+	// 创建db
+	db := global.GVA_DB.Model(&company.Company{})
+	var comps []company.Company
+	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
+		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
+	}
+	if info.Company_name != "" {
+		db = db.Where("company_name LIKE ?", "%"+info.Company_name+"%")
+	}
+	if info.Contact_name != "" {
+		db = db.Where("contact_name LIKE ?", "%"+info.Contact_name+"%")
+	}
+	if info.Phone != "" {
+		db = db.Where("phone LIKE ?", "%"+info.Phone+"%")
+	}
+	if info.Address != "" {
+		db = db.Where("address LIKE ?", "%"+info.Address+"%")
+	}
+	if info.Postcode != "" {
+		db = db.Where("postcode LIKE ?", "%"+info.Postcode+"%")
+	}
+	if info.Note != "" {
+		db = db.Where("note LIKE ?", "%"+info.Note+"%")
+	}
+	if info.Sage != "" {
+		db = db.Where("sage LIKE ?", "%"+info.Sage+"%")
+	}
+
+	var OrderStr string
+	orderMap := make(map[string]bool)
+	orderMap["company_name"] = true
+	if orderMap[info.Sort] {
+		OrderStr = info.Sort
+		if info.Order == "descending" {
+			OrderStr = OrderStr + " desc"
+		}
+		db = db.Order(OrderStr)
+	} else {
+		db = db.Order("id desc")
+	}
+	err = db.Find(&comps).Error
+	if err != nil {
+		return
+	}
+
+	// excel
+	var xlsx *excelize.File = excelize.NewFile()
+	var sheet = xlsx.GetSheetName(0)
+	err = xlsx.SetSheetRow(sheet, "A1", &[]string{
+		"Name",
+		"Address",
+		"Contact Person",
+		"Contact Phone",
+		"City",
+		"Post Code",
+		"Note",
+	})
+	if err != nil {
+		return
+	}
+
+	for i, j := 0, len(comps); i < j; i++ {
+		axis := fmt.Sprintf("A%d", i+2)
+
+		err = xlsx.SetSheetRow(sheet, axis, &[]interface{}{
+			comps[i].Company_name,
+			comps[i].Address,
+			comps[i].Contact_name,
+			comps[i].Phone,
+			comps[i].City,
+			comps[i].Postcode,
+			comps[i].Note,
+		})
+		if err != nil {
+			return
+		}
+	}
+
+	err = xlsx.SaveAs(fileName)
+	return err
+
 }

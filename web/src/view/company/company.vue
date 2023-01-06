@@ -10,11 +10,11 @@
         </el-form-item>
         -->
         <el-form-item label="公司名称">
-          <el-input v-model="searchInfo.company_name" placeholder="搜索条件" />
+          <el-input v-model="searchInfo.customer_company_name" placeholder="搜索条件" />
 
         </el-form-item>
         <el-form-item label="联系人">
-          <el-input v-model="searchInfo.contact_name" placeholder="搜索条件" />
+          <el-input v-model="searchInfo.customer_contact_name" placeholder="搜索条件" />
 
         </el-form-item>
         <el-form-item label="联系电话">
@@ -39,6 +39,7 @@
         </el-form-item>
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
+          <el-button size="small" type="primary" icon="download" @click="onDownload">下载</el-button>
           <el-button size="small" icon="refresh" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -151,7 +152,8 @@ import {
   deleteCompanyByIds,
   updateCompany,
   findCompany,
-  getCompanyList
+  getCompanyList,
+  exportCompanyExcel
 } from '@/api/company'
 
 // 全量引入格式化工具 请按需保留
@@ -223,6 +225,10 @@ const getTableData = async() => {
 }
 
 getTableData()
+
+const onDownload = () => {
+  exportCompanyExcel({ ...searchInfo.value })
+}
 
 // ============== 表格控制部分结束 ===============
 
