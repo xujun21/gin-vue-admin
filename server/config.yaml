@@ -92,11 +92,11 @@ local:
   store-path: uploads/file
 mysql:
   path: ""
-  port: ""
-  config: ""
-  db-name: ""
-  username: ""
-  password: ""
+  port: "3306"
+  config: charset=utf8&parseTime=true
+  db-name: "omsDB"
+  username: "root"
+  password: "nyHxLmmm"
   prefix: ""
   singular: false
   engine: ""
@@ -122,7 +122,7 @@ pgsql:
   path: 127.0.0.1
   port: "5432"
   config: sslmode=disable TimeZone=Asia/Shanghai
-  db-name: gva
+  db-name: oms
   username: postgres
   password: ""
   prefix: ""
@@ -147,7 +147,7 @@ redis:
 system:
   env: public
   addr: 8888
-  db-type: pgsql
+  db-type: mysql
   oss-type: local
   use-multipoint: false
   use-redis: false
