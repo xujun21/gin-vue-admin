@@ -1,6 +1,7 @@
 package v1
 
 import (
+	reqOrder "github.com/flipped-aurora/gin-vue-admin/server/api/v1/ReqOrder"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/company"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/customer"
 	"github.com/flipped-aurora/gin-vue-admin/server/api/v1/example"
@@ -16,6 +17,7 @@ type ApiGroup struct {
 	OrderApiGroup    order.ApiGroup
 	CustomerApiGroup customer.ApiGroup
 	CompanyApiGroup  company.ApiGroup
+	ReqorderApiGroup reqOrder.ApiGroup
 }
 
 var ApiGroupApp = new(ApiGroup)

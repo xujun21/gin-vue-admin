@@ -2,8 +2,9 @@
 package product
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"time"
+
+	"github.com/flipped-aurora/gin-vue-admin/server/global"
 )
 
 // Product 结构体
@@ -21,6 +22,14 @@ type Product struct {
 	CreatedBy       uint       `gorm:"column:created_by;comment:创建者"`
 	UpdatedBy       uint       `gorm:"column:updated_by;comment:更新者"`
 	DeletedBy       uint       `gorm:"column:deleted_by;comment:删除者"`
+
+	// 采购必须字段
+	SelfLife    string   `json:"self_life" form:"self_life" gorm:"column:self_life;comment:;"`
+	BarcodeCase string   `json:"barcode_case" form:"barcode_case" gorm:"column:barcode_case;comment:;"`
+	CartonSize  string   `json:"carton_size" form:"carton_size" gorm:"column:carton_size;comment:;"`
+	Cbm         *float64 `json:"cbm" form:"cbm" gorm:"column:cbm;comment:;"`
+	Weight      *float64 `json:"weight" form:"weight" gorm:"column:weight;comment:;"`
+	InPrice     *float64 `json:"in_price" form:"in_price" gorm:"column:in_price;comment:采购价;"`
 }
 
 // TableName Product 表名

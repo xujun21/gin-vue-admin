@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/router/ReqOrder"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/company"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/customer"
 	"github.com/flipped-aurora/gin-vue-admin/server/router/example"
@@ -16,6 +17,7 @@ type RouterGroup struct {
 	Order    order.RouterGroup
 	Customer customer.RouterGroup
 	Company  company.RouterGroup
+	Reqorder ReqOrder.RouterGroup
 }
 
 var RouterGroupApp = new(RouterGroup)

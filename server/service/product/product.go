@@ -2,13 +2,15 @@ package product
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/product"
 	productReq "github.com/flipped-aurora/gin-vue-admin/server/model/product/request"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type ProductService struct {
@@ -54,6 +56,9 @@ func (prodService *ProductService) DeleteProductByIds(ids request.IdsReq, delete
 // UpdateProduct 更新Product记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (prodService *ProductService) UpdateProduct(prod product.Product) (err error) {
+	if prod.CreatedAt.Before(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)) {
+		prod.CreatedAt = time.Now()
+	}
 	err = global.GVA_DB.Save(&prod).Error
 	return err
 }

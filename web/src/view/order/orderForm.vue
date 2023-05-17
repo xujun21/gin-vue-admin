@@ -10,7 +10,7 @@
           </el-col>
           <el-col :span="14">
             <el-form-item label="订单日期:" prop="order_date">
-              <el-date-picker v-model="formData.order_date" format="DD-MM-YYYY HH:mm:ss" type="date" placeholder="选择日期" :clearable="true" />
+              <el-date-picker v-model="formData.order_date" format="DD-MM-YYYY" type="date" placeholder="选择日期" :clearable="true" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -22,7 +22,7 @@
           </el-col>
           <el-col :span="14">
             <el-form-item label="发票日期:" prop="invoice_date">
-              <el-date-picker v-model="formData.invoice_date" format="DD-MM-YYYY HH:mm:ss" type="date" placeholder="选择日期" :clearable="true" />
+              <el-date-picker v-model="formData.invoice_date" format="DD-MM-YYYY" type="date" placeholder="选择日期" :clearable="true" />
             </el-form-item>
           </el-col>
         </el-row>

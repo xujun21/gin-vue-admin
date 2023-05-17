@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/service/ReqOrder"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/company"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/customer"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/example"
@@ -16,6 +17,7 @@ type ServiceGroup struct {
 	OrderServiceGroup    order.ServiceGroup
 	CustomerServiceGroup customer.ServiceGroup
 	CompanyServiceGroup  company.ServiceGroup
+	ReqorderServiceGroup ReqOrder.ServiceGroup
 }
 
 var ServiceGroupApp = new(ServiceGroup)

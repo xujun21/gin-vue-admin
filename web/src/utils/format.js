@@ -47,3 +47,14 @@ export const formatCurrencyInput = (value) => {
   console.log(parseFloat(val).toFixed(2))
   return parseFloat(val).toFixed(2)
 }
+
+export const formatCbm = (row, column)=> {
+  var data = row[column.property] ? row[column.property] : 0
+  return parseFloat(data).toFixed(4)
+}
+
+export const formatNumber = (row, column)=> {
+  var data = row[column.property] ? row[column.property] : 0
+  return parseFloat(data).toFixed(2)
+}
+

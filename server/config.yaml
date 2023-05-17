@@ -91,7 +91,7 @@ local:
   path: uploads/file
   store-path: uploads/file
 mysql:
-  path: ""
+  path: "127.0.0.1"
   port: "3306"
   config: charset=utf8&parseTime=true&loc=Local
   db-name: "omsDB"
