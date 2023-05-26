@@ -19,7 +19,8 @@ type ProductSearch struct {
 	StartStore     *int       `json:"startStore" form:"startStore"`
 	EndStore       *int       `json:"endStore" form:"endStore"`
 	request.PageInfo
-	Sort      string `json:"sort" form:"sort"`
-	Order     string `json:"order" form:"order"`
-	WithPrice *int   `json:"withPrice" form:"withPrice"`
+	Sort       string `json:"sort" form:"sort"`
+	Order      string `json:"order" form:"order"`
+	WithPrice  *int   `json:"withPrice" form:"withPrice"`
+	RequireOrd *int   `json:"requireOrd" form:"requireOrd"` // 用于采购单相关的商品字段导出，==1时为导出采购单字段
 }

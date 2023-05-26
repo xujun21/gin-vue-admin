@@ -44,8 +44,8 @@
         </el-form-item> -->
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
-          <!-- <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport(1)">导出(含价格)</el-button>
-          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport(0)">导出(无价格)</el-button> -->
+          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport">导出</el-button>
+          <!-- <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport(0)">导出(无价格)</el-button> -->
           <el-button size="small" icon="refresh" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -191,10 +191,10 @@ import { formatCurrency, formatDate, formatDateOnly, formatBoolean, filterDict }
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue'
 
-// const handleExcelExport = (param) => {
-//   searchInfo.value.withPrice = param
-//   exportProductExcel({ ...searchInfo.value })
-// }
+const handleExcelExport = () => {
+  searchInfo.value.requireOrd = 1 //  采购单的相关的商品信息导出
+  exportProductExcel({ ...searchInfo.value })
+}
 
 // 自动化生成的字典（可能为空）以及字段
 const formData = ref({

@@ -187,51 +187,98 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 
 	// 创建EXCEL
 	var xlsx *excelize.File
-	if xlsx, err = excelize.OpenFile(global.GVA_CONFIG.Excel.Dir + "template_product.xlsx"); err != nil {
-		return err
-	}
-	var sheet = xlsx.GetSheetName(0)
-
 	i := 0
 	j := 0
 
-	var strStyle, dateStyle, numStyle, moneyStyle [2]int
-	strStyle[0], _ = xlsx.GetCellStyle(sheet, "A4")
-	dateStyle[0], _ = xlsx.GetCellStyle(sheet, "D4")
-	numStyle[0], _ = xlsx.GetCellStyle(sheet, "E4")
-	moneyStyle[0], _ = xlsx.GetCellStyle(sheet, "F4")
-	strStyle[1], _ = xlsx.GetCellStyle(sheet, "A5")
-	dateStyle[1], _ = xlsx.GetCellStyle(sheet, "D5")
-	numStyle[1], _ = xlsx.GetCellStyle(sheet, "E5")
-	moneyStyle[1], _ = xlsx.GetCellStyle(sheet, "F5")
-
-	for i, j = 0, len(prods); i < j; i++ {
-		iStr := strconv.Itoa(4 + i)
-
-		if err != nil {
-			fmt.Println(err)
+	// 区分是普通商品字段还是采购商品字段
+	if info.RequireOrd != nil && *info.RequireOrd == 1 {
+		if xlsx, err = excelize.OpenFile(global.GVA_CONFIG.Excel.Dir + "template_product_require.xlsx"); err != nil {
+			return err
 		}
-		index := i % 2
-		xlsx.SetCellStyle(sheet, "A"+iStr, "C"+iStr, strStyle[index])
-		xlsx.SetCellStyle(sheet, "D"+iStr, "D"+iStr, dateStyle[index])
-		xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, numStyle[index])
-		xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, moneyStyle[index])
-		xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, strStyle[index])
-
-		xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
-		xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
-		xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
-		if prods[i].Exp_date != nil {
-			xlsx.SetCellValue(sheet, "D"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+		var sheet = xlsx.GetSheetName(0)
+		const ColSize int = 11
+		var style1 [ColSize]int
+		var style2 [ColSize]int
+		var startingASCIINumber int = 65
+		for k := 0; k < ColSize; k++ {
+			style1[k], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"4")
+			style2[k], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"5")
 		}
-		xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
-		xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
-		xlsx.SetCellValue(sheet, "G"+iStr, prods[i].Barcode)
-	}
 
-	if *info.WithPrice == 0 {
-		xlsx.RemoveCol(sheet, "G")
-		xlsx.RemoveCol(sheet, "F")
+		for i, j = 0, len(prods); i < j; i++ {
+			iStr := strconv.Itoa(4 + i)
+			if i%2 == 0 {
+				for k := 0; k < ColSize; k++ {
+					xlsx.SetCellStyle(sheet, string(rune(k+startingASCIINumber))+iStr, string(rune(k+startingASCIINumber))+iStr, style1[k])
+				}
+			} else {
+				for k := 0; k < ColSize; k++ {
+					xlsx.SetCellStyle(sheet, string(rune(k+startingASCIINumber))+iStr, string(rune(k+startingASCIINumber))+iStr, style2[k])
+				}
+			}
+			xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
+			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+"\n"+prods[i].Product_name_en)
+			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
+			xlsx.SetCellInt(sheet, "D"+iStr, *prods[i].Store)
+			xlsx.SetCellStr(sheet, "E"+iStr, prods[i].SelfLife)
+			xlsx.SetCellStr(sheet, "F"+iStr, prods[i].Barcode)
+			xlsx.SetCellStr(sheet, "G"+iStr, prods[i].BarcodeCase)
+			xlsx.SetCellStr(sheet, "H"+iStr, prods[i].CartonSize)
+			if prods[i].Cbm != nil {
+				xlsx.SetCellFloat(sheet, "I"+iStr, *prods[i].Cbm, 4, 64)
+			}
+			if prods[i].Weight != nil {
+				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Weight, 2, 64)
+			}
+			if prods[i].InPrice != nil {
+				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].InPrice, 2, 64)
+			}
+
+		}
+	} else {
+		if xlsx, err = excelize.OpenFile(global.GVA_CONFIG.Excel.Dir + "template_product.xlsx"); err != nil {
+			return err
+		}
+		var sheet = xlsx.GetSheetName(0)
+
+		var strStyle, dateStyle, numStyle, moneyStyle [2]int
+		strStyle[0], _ = xlsx.GetCellStyle(sheet, "A4")
+		dateStyle[0], _ = xlsx.GetCellStyle(sheet, "D4")
+		numStyle[0], _ = xlsx.GetCellStyle(sheet, "E4")
+		moneyStyle[0], _ = xlsx.GetCellStyle(sheet, "F4")
+		strStyle[1], _ = xlsx.GetCellStyle(sheet, "A5")
+		dateStyle[1], _ = xlsx.GetCellStyle(sheet, "D5")
+		numStyle[1], _ = xlsx.GetCellStyle(sheet, "E5")
+		moneyStyle[1], _ = xlsx.GetCellStyle(sheet, "F5")
+
+		for i, j = 0, len(prods); i < j; i++ {
+			iStr := strconv.Itoa(4 + i)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+			index := i % 2
+			xlsx.SetCellStyle(sheet, "A"+iStr, "C"+iStr, strStyle[index])
+			xlsx.SetCellStyle(sheet, "D"+iStr, "D"+iStr, dateStyle[index])
+			xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, numStyle[index])
+			xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, moneyStyle[index])
+			xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, strStyle[index])
+
+			xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
+			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
+			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
+			if prods[i].Exp_date != nil {
+				xlsx.SetCellValue(sheet, "D"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+			}
+			xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
+			xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
+			xlsx.SetCellValue(sheet, "G"+iStr, prods[i].Barcode)
+		}
+
+		if *info.WithPrice == 0 {
+			xlsx.RemoveCol(sheet, "G")
+			xlsx.RemoveCol(sheet, "F")
+		}
 	}
 
 	err = xlsx.SaveAs(fileName)
