@@ -158,6 +158,20 @@ func (ReqOrdService *RequireOrderService) ExportRequireExcel(reqOrderId *int, fi
 			xlsx.SetCellFloat(sheet, "O"+iStr, *subOrderList[i].InPrice, 2, 64)
 		}
 	}
+	iStr := strconv.Itoa(i + 4)
+	xlsx.SetCellFormula(sheet, "G"+iStr, "sum(G4:G"+strconv.Itoa(i+3)+")")
+	xlsx.SetCellFormula(sheet, "L"+iStr, "sum(L4:L"+strconv.Itoa(i+3)+")")
+	xlsx.SetCellFormula(sheet, "N"+iStr, "sum(N4:N"+strconv.Itoa(i+3)+")")
+	xlsx.SetCellFormula(sheet, "P"+iStr, "sum(P4:P"+strconv.Itoa(i+3)+")")
+
+	styleL, _ := xlsx.GetCellStyle(sheet, "L2")
+	xlsx.SetCellStyle(sheet, "L"+iStr, "L"+iStr, styleL)
+	styleN, _ := xlsx.GetCellStyle(sheet, "N2")
+	xlsx.SetCellStyle(sheet, "N"+iStr, "N"+iStr, styleN)
+	styleP, _ := xlsx.GetCellStyle(sheet, "P2")
+	xlsx.SetCellStyle(sheet, "P"+iStr, "P"+iStr, styleP)
+	styleG, _ := xlsx.GetCellStyle(sheet, "G2")
+	xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, styleG)
 
 	err = xlsx.SaveAs(fileName)
 	return err

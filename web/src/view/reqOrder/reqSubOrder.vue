@@ -24,7 +24,7 @@
       <el-table-column align="left" label="Carton Size" prop="cartonSize" width="120" />
       <el-table-column align="right" label="CBM" prop="cbm" width="80" :formatter="formatCbm" />
       <el-table-column align="right" label="Weight" prop="weight" width="80" :formatter="formatNumber" />
-      <el-table-column align="right" label="采购价格" prop="in_price" width="80" :formatter="formatNumber" />
+      <el-table-column align="right" label="采购价格" prop="inPrice" width="80" :formatter="formatNumber" />
       <el-table-column align="left" label="创建日期" width="180">
         <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
       </el-table-column>
