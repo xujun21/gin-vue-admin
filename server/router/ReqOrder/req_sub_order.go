@@ -20,6 +20,7 @@ func (s *ReqSubOrderRouter) InitReqSubOrderRouter(Router *gin.RouterGroup) {
 		reqSubOrderRouter.DELETE("deleteReqSubOrderByIds", reqSubOrderApi.DeleteReqSubOrderByIds) // 批量删除ReqSubOrder
 		reqSubOrderRouter.PUT("updateReqSubOrder", reqSubOrderApi.UpdateReqSubOrder)              // 更新ReqSubOrder
 		reqSubOrderRouter.PUT("addReqSubOrderByProductIds", reqSubOrderApi.AddReqSubOrderByProductIds)
+		reqSubOrderRouter.PUT("updateReqSubOrderInQty", reqSubOrderApi.UpdateReqSubOrderInQty) // 更新ReqSubOrder的采购数量
 	}
 	{
 		reqSubOrderRouterWithoutRecord.GET("findReqSubOrder", reqSubOrderApi.FindReqSubOrder)       // 根据ID获取ReqSubOrder

@@ -19,6 +19,7 @@ type ReqSubOrder struct {
 	ProductId     uint     `json:"productId" form:"productId" gorm:"column:product_id;comment:;size:20;"`
 	ProductNameCn string   `json:"productNameCn" form:"productNameCn" gorm:"column:product_name_cn;comment:;size:191;"`
 	ProductNameEn string   `json:"productNameEn" form:"productNameEn" gorm:"column:product_name_en;comment:;size:191;"`
+	InQty         *int     `json:"inQty" form:"inQty" gorm:"column:in_qty;comment:采购数量;size:20;"`
 	ReqOrderId    *int     `json:"reqOrderId" form:"reqOrderId" gorm:"column:req_order_id;comment:;size:19;"`
 	SelfLife      string   `json:"selfLife" form:"selfLife" gorm:"column:self_life;comment:;size:191;"`
 	UpdatedBy     *int     `json:"updatedBy" form:"updatedBy" gorm:"column:updated_by;comment:更新者;size:20;"`

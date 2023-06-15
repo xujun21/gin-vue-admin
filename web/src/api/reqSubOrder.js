@@ -64,6 +64,16 @@ export const updateReqSubOrder = (data) => {
   })
 }
 
+export const updateReqSubOrderInQty = (data) => {
+  console.log(data)
+  return service({
+    url: '/reqSubOrder/updateReqSubOrderInQty',
+    method: 'put',
+    data
+  })
+}
+
+
 // @Tags ReqSubOrder
 // @Summary 用id查询ReqSubOrder
 // @Security ApiKeyAuth

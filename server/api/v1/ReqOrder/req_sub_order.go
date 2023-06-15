@@ -115,6 +115,21 @@ func (reqSubOrderApi *ReqSubOrderApi) UpdateReqSubOrder(c *gin.Context) {
 	}
 }
 
+func (reqSubOrderApi *ReqSubOrderApi) UpdateReqSubOrderInQty(c *gin.Context) {
+	var reqSubOrder ReqOrder.ReqSubOrder
+	err := c.ShouldBindJSON(&reqSubOrder)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := reqSubOrderService.UpdateReqSubOrderInQty(reqSubOrder.ID, reqSubOrder.InQty); err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Error(err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
+	}
+}
+
 // FindReqSubOrder 用id查询ReqSubOrder
 // @Tags ReqSubOrder
 // @Summary 用id查询ReqSubOrder

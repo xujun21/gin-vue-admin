@@ -40,6 +40,17 @@ func (reqSubOrderService *ReqSubOrderService) UpdateReqSubOrder(reqSubOrder ReqO
 	return err
 }
 
+func (reqSubOrderService *ReqSubOrderService) UpdateReqSubOrderInQty(reqOrderId uint, inQty *int) (err error) {
+	var reqSubOrder ReqOrder.ReqSubOrder
+	if err = global.GVA_DB.Where("id = ?", reqOrderId).First(&reqSubOrder).Error; err != nil {
+		return err
+	}
+
+	reqSubOrder.InQty = inQty
+	err = global.GVA_DB.Save(&reqSubOrder).Error
+	return err
+}
+
 // GetReqSubOrder 根据id获取ReqSubOrder记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (reqSubOrderService *ReqSubOrderService) GetReqSubOrder(id uint) (reqSubOrder ReqOrder.ReqSubOrder, err error) {

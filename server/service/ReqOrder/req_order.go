@@ -145,6 +145,7 @@ func (ReqOrdService *RequireOrderService) ExportRequireExcel(reqOrderId *int, fi
 		xlsx.SetCellStr(sheet, "A"+iStr, subOrderList[i].ProductCode)
 		xlsx.SetCellStr(sheet, "B"+iStr, subOrderList[i].ProductNameCn+"\n"+subOrderList[i].ProductNameEn)
 		xlsx.SetCellStr(sheet, "D"+iStr, subOrderList[i].SelfLife)
+		xlsx.SetCellInt(sheet, "G"+iStr, *subOrderList[i].InQty)
 		xlsx.SetCellStr(sheet, "H"+iStr, subOrderList[i].Barcode)
 		xlsx.SetCellStr(sheet, "I"+iStr, subOrderList[i].BarcodeCase)
 		xlsx.SetCellStr(sheet, "J"+iStr, subOrderList[i].CartonSize)

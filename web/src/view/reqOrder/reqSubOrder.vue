@@ -11,6 +11,7 @@
       <el-table-column type="selection" />
       <el-table-column align="left" label="操作" width="100">
         <template #default="scope">
+          <el-button type="primary" link icon="edit" size="small" class="table-button" @click="modifyInQty(scope.row)">修改数量</el-button>
           <el-button type="primary" link icon="delete" size="small" @click="deleteRow(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -19,6 +20,7 @@
         <template #default="scope">{{ scope.row.productNameCn }}<br>{{ scope.row.productNameEn }}</template>
       </el-table-column>
       <el-table-column align="left" label="SELFLIFE" prop="selfLife" width="100" />
+      <el-table-column align="left" label="采购数量" prop="inQty" width="100" />
       <el-table-column align="left" label="Barcode" prop="barcode" width="100" />
       <el-table-column align="left" label="Barcode(Case)" prop="barcodeCase" width="120" />
       <el-table-column align="left" label="Carton Size" prop="cartonSize" width="120" />
@@ -53,18 +55,6 @@
         </template>
       </el-popover>
       <el-button size="small" type="primary" @click="back">返回</el-button>
-      &nbsp;&nbsp;&nbsp;
-      <!-- <el-upload
-        class="excel-btn"
-        :action="`${path}/upSubOrd/uploadSubOrderExcel?orderId=${orderId}`"
-        :headers="{'x-token':userStore.token}"
-        :on-success="loadExcel"
-        :show-file-list="false"
-      >
-        <el-button size="small" type="primary" icon="upload">导入订货单</el-button>
-      </el-upload>
-      &nbsp;&nbsp;&nbsp;
-      <el-button class="excel-btn" size="small" type="success" icon="download" @click="downloadExcelTemplate()">下载模板</el-button> -->
     </div>
 
     <el-dialog v-model="productDialogVisible" :before-close="productBack" title="选择商品（显示所有商品）" style="width: 60%">
@@ -118,6 +108,21 @@
       <el-button size="small" type="primary" @click="chooseProducts">确定</el-button>
       <el-button size="small" type="primary" @click="productBack">取消</el-button>
     </el-dialog>
+
+    <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="修改采购数量">
+      <el-form ref="elFormRef" :model="formData" label-position="right" :rules="rule" label-width="100px">
+        <el-form-item label="采购数量:" prop="inQty">
+          <el-input v-model.number="formData.inQty" :clearable="true" placeholder="请输入采购数量" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button size="small" @click="closeDialog">取 消</el-button>
+          <el-button size="small" type="primary" @click="enterDialog">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -131,7 +136,7 @@ export default {
 import {
   deleteReqSubOrder,
   deleteReqSubOrderByIds,
-  // updateReqSubOrder,
+  updateReqSubOrderInQty,
   // findReqSubOrder,
   getReqSubOrderList,
   addReqSubOrderByProductIds
@@ -151,135 +156,12 @@ import { ref, reactive } from 'vue'
 import { fix } from 'mathjs'
 
 import { useUserStore } from '@/pinia/modules/user'
-import { downloadTemplate } from '@/api/excel'
 // import {
 //   getUploadSubOrderList,
 //   doExecImport
 // } from '@/api/uploadSubOrder'
 
 const isDisabled = ref(true)
-
-// Excel
-// const path = ref(import.meta.env.VITE_BASE_API)
-// const userStore = useUserStore()
-// const upPage = ref(1)
-// const upTotal = ref(0)
-// const upPageSize = ref(10)
-// const uploadData = ref([])
-// const upSearchInfo = ref({})
-// const uploadMemos = ref()
-
-// 0：正常；1：库存不足；2:商品编号不存在;3：商品数量填写异常
-// const translateMemo = (memo) => {
-//   switch (memo) {
-//     case '0':
-//       return 'OK'
-//     case '1':
-//       return '库存不足'
-//     case '2':
-//       return '商品编号不存在'
-//     case '3':
-//       return '商品数量填写异常'
-//   }
-// }
-
-// const confirmUpload = (val) => {
-//   doImport()
-//   dialogUploadVisible.value = false
-// }
-
-// const downloadExcelTemplate = () => {
-//   downloadTemplate('ExcelTemplate.xlsx')
-// }
-
-// 确认导入
-// const doImport = async() => {
-//   const res = await doExecImport({ 'order_id': orderId })
-//   if (res.code === 0) {
-//     ElMessage({
-//       type: 'success',
-//       message: '导入成功，请继续选择其他商品或者回到订单修改数量'
-//     })
-//     productDialogVisible.value = false
-//     getTableData()
-//     getpTableData()
-//   }
-// }
-
-// const uploadBack = () => {
-//   dialogUploadVisible.value = false
-// }
-
-// 分页
-// const upHandleSizeChange = (val) => {
-//   upPageSize.value = val
-//   getUploadData()
-// }
-
-// // 修改页面容量
-// const upHandleCurrentChange = (val) => {
-//   upPage.value = val
-//   getUploadData()
-// }
-
-// 查询
-// const getUploadData = async() => {
-//   upSearchInfo.value['orderId'] = orderId
-
-//   const table = await getUploadSubOrderList({ page: upPage.value, pageSize: upPageSize.value, ...upSearchInfo.value })
-//   if (table.code === 0) {
-//     uploadData.value = table.data.list
-//     upTotal.value = table.data.total
-//     upPage.value = table.data.page
-//     upPageSize.value = table.data.pageSize
-//   }
-
-//   const allData = await getUploadSubOrderList({ page: 1, pageSize: 9999, ...upSearchInfo.value })
-//   if (allData.code === 0) {
-//     var all = allData.data.list
-//     var overStoreErr = 0
-//     var codeErr = 0
-//     var quantityErr = 0
-//     // 0：正常；1：库存不足；2:商品编号不存在;3：商品数量填写异常
-//     for (var i = 0; i < all.length; i++) {
-//       var rowData = all[i]
-//       switch (rowData['memo']) {
-//         case '1':
-//           overStoreErr++
-//           break
-//         case '2':
-//           codeErr++
-//           break
-//         case '3':
-//           quantityErr++
-//           break
-//         default:
-//       }
-//     }
-//     if (overStoreErr + codeErr + quantityErr > 0) {
-//       uploadMemos.value = '上传数据异常统计：上传总行数' + all.length + '，其中'
-//       if (overStoreErr > 0) {
-//         uploadMemos.value = uploadMemos.value + overStoreErr + '行库存不足，'
-//       }
-//       if (codeErr > 0) {
-//         uploadMemos.value = uploadMemos.value + codeErr + '行商品编号不存在，'
-//       }
-//       if (quantityErr > 0) {
-//         uploadMemos.value = uploadMemos.value + quantityErr + '行商品数量填写异常，'
-//       }
-//       uploadMemos.value = uploadMemos.value + '请检查。'
-//     } else {
-//       uploadMemos.value = ''
-//     }
-//   }
-// }
-
-// const dialogUploadVisible = ref(false)
-
-// const loadExcel = () => {
-//   getUploadData()
-//   dialogUploadVisible.value = true
-// }
 
 // 自动化生成的字典（可能为空）以及字段
 const formData = ref({
@@ -288,6 +170,7 @@ const formData = ref({
   product_code: '',
   product_name_cn: '',
   product_name_en: '',
+  inQty: 0,
   // exp_date: new Date(),
   // package: '',
   // price: 0,
@@ -535,20 +418,16 @@ const onDelete = async() => {
 // 行为控制标记（弹窗内部需要增还是改）
 // const type = ref('')
 
-// 更新行
-// const updateSubOrderFunc = async(row) => {
-//   const res = await findSubOrder({ ID: row.ID })
-//   type.value = 'update'
+// // 更新采购数量inQty
+// const updateReqSubOrder = async(formData) => {
+//   const res = await updateReqSubOrderInQty({ ID: formData.value.req_order_id, inQty: formData.value.inQty })
 //   if (res.code === 0) {
-//     formData.value = res.data.resubOrd
-//     oldQuantity = formData.value['quantity']
-//     // formData.value['leftStore'] = 10
-//     const prd = await findProduct({ ID: formData.value['product_id'] })
-//     if (prd.code === 0) {
-//       // console.log(prd.data.reprod)
-//       formData.value['leftStore'] = prd.data.reprod['store']
-//     }
-//     dialogFormVisible.value = true
+//     ElMessage({
+//       type: 'success',
+//       message: '更新数量成功'
+//     })
+//     getTableData()
+//     getpTableData()
 //   }
 // }
 
@@ -573,11 +452,16 @@ const dialogFormVisible = ref(false)
 
 const productDialogVisible = ref(false)
 
-// // 打开弹窗
-// const openDialog = () => {
-//   type.value = 'create'
-//   dialogFormVisible.value = true
-// }
+// 打开修改采购数量弹窗
+const modifyInQty = (row) => {
+  // console.log(row)
+  formData.value = {
+    req_order_id: row.ID,
+    inQty: row.inQty,
+  }
+  // console.log(formData)
+  dialogFormVisible.value = true
+}
 
 // 打开商品选择的弹窗
 const openProductDialog = () => {
@@ -601,25 +485,15 @@ const closeDialog = () => {
     sub_total: 0,
     discount: 0,
     discount_total: 0,
+    inQty: 0,
   }
 }
 // 弹窗确定
 const enterDialog = async() => {
   elFormRef.value?.validate(async(valid) => {
     if (!valid) return
-    // let res
-    // switch (type.value) {
-    //   case 'create':
-    //     res = await createSubOrder(formData.value)
-    //     break
-    //   case 'update':
-    //     res = await updateSubOrder(formData.value)
-    //     break
-    //   default:
-    //     res = await createSubOrder(formData.value)
-    //     break
-    // }
-    const res = await updateSubOrder(formData.value) // 同时更新库存
+    const res = await updateReqSubOrderInQty({ ID: formData.value.req_order_id, inQty: formData.value.inQty })
+    // const res = await updateReqSubOrder(formData) // 更新采购数量
     if (res.code === 0) {
       ElMessage({
         type: 'success',
