@@ -116,6 +116,7 @@ func (reqSubOrdService *ReqSubOrderService) AddReqSubOrderByProductIds(reqOrderI
 				reqSubOrder.InPrice = prod.InPrice
 				reqSubOrder.SelfLife = prod.SelfLife
 				reqSubOrder.Weight = prod.Weight
+				reqSubOrder.Package = prod.Package
 
 				reqSubOrder.CreatedBy = createdBy
 				reqSubOrderList = append(reqSubOrderList, reqSubOrder)

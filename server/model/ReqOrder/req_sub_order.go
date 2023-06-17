@@ -24,6 +24,7 @@ type ReqSubOrder struct {
 	SelfLife      string   `json:"selfLife" form:"selfLife" gorm:"column:self_life;comment:;size:191;"`
 	UpdatedBy     *int     `json:"updatedBy" form:"updatedBy" gorm:"column:updated_by;comment:更新者;size:20;"`
 	Weight        *float64 `json:"weight" form:"weight" gorm:"column:weight;comment:;size:22;"`
+	Package       string   `json:"package" form:"package" gorm:"column:package;comment:;"`
 }
 
 // TableName ReqSubOrder 表名

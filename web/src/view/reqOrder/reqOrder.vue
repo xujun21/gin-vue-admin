@@ -97,7 +97,7 @@
         </div>
     </div>
     <el-dialog v-model="dialogFormVisible" :before-close="closeDialog" title="新建采购单">
-      <el-form :model="formData" label-position="right" ref="elFormRef" :rules="rule" label-width="120px">
+      <el-form ref="elFormRef" :model="formData" label-position="right" :rules="rule" label-width="120px">
         <el-form-item label="PONumber:" prop="poNumber">
           <el-input v-model="formData.poNumber" style="width:85%" :clearable="true"></el-input>
         </el-form-item>
