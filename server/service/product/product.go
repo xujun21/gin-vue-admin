@@ -274,7 +274,7 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 			xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
 			xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
 			xlsx.SetCellValue(sheet, "G"+iStr, prods[i].Barcode)
-			xlsx.SetCellValue(sheet, "H"+iStr, *prods[i].vat)
+			xlsx.SetCellValue(sheet, "H"+iStr, *prods[i].Vat)
 		}
 
 		if *info.WithPrice == 0 {
