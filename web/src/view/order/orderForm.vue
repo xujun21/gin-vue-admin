@@ -283,7 +283,7 @@ const discountChanged = (val) => {
                                 handDiscount.value - Math.round(val * 100)) / 100
 
   // 更新
-  handDiscount.value = Math.round(val * 100)
+  handDiscount.value = Math.round(val * 100) ? Math.round(val * 100) : 0 // 为空换0
 
   if (val < 0) {
     ElMessage({

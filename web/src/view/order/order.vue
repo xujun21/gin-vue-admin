@@ -15,6 +15,10 @@
           <el-date-picker v-model="searchInfo.endOrder_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（止）" />
 
         </el-form-item>
+        <el-form-item label="订单号">
+          <el-input v-model="searchInfo.ID" placeholder="搜索条件" />
+
+        </el-form-item>
         <el-form-item label="发票号">
           <el-input v-model="searchInfo.invoice_no" placeholder="搜索条件" />
 
