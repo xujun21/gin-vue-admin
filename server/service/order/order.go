@@ -210,6 +210,9 @@ func (ordService *OrderService) GetOrderInfoList(info orderReq.OrderSearch) (lis
 	if info.Customer_contact_name != "" {
 		db = db.Where("customer_contact_name LIKE ?", "%"+info.Customer_contact_name+"%")
 	}
+	if info.Order.ID != 0 {
+		db = db.Where("ID = ?", info.Order.ID)
+	}
 	err = db.Count(&total).Error
 	if err != nil {
 		return
