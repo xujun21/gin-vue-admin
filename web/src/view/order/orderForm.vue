@@ -282,8 +282,16 @@ const discountChanged = (val) => {
   formData.value['order_total'] = (Math.round(Number.parseFloat(formData.value['order_total'] * 100)) +
                                 handDiscount.value - Math.round(val * 100)) / 100
 
+  if (val == null) {
+    ElMessage({
+      type: 'error',
+      message: '折扣不能为空！'
+    })
+    isDisabled.value = true
+    return
+  }
   // 更新
-  handDiscount.value = Math.round(val * 100) ? Math.round(val * 100) : 0 // 为空换0
+  handDiscount.value = Math.round(val * 100)
 
   if (val < 0) {
     ElMessage({
