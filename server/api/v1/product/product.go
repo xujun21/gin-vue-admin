@@ -35,8 +35,8 @@ func (prodApi *ProductApi) CreateProduct(c *gin.Context) {
 	}
 	prod.CreatedBy = utils.GetUserID(c)
 	if err := prodService.CreateProduct(prod); err != nil {
-		global.GVA_LOG.Error("创建失败!", zap.Error(err))
-		response.FailWithMessage("创建失败", c)
+		global.GVA_LOG.Error("创建失败", zap.Error(err))
+		response.FailWithMessage("创建失败: "+err.Error(), c)
 	} else {
 		response.OkWithMessage("创建成功", c)
 	}
@@ -158,6 +158,35 @@ func (prodApi *ProductApi) GetProductList(c *gin.Context) {
 		return
 	}
 	if list, total, err := prodService.GetProductInfoList(pageInfo); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     list,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
+	}
+}
+
+// GetDeletedProductList 分页获取已经删除的Product列表
+// @Tags Product
+// @Summary 分页获取Product列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query productReq.ProductSearch true "分页获取Product列表"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /prod/getDeletedProductList [get]
+func (prodApi *ProductApi) GetDeletedProductList(c *gin.Context) {
+	var pageInfo productReq.ProductSearch
+	err := c.ShouldBindQuery(&pageInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if list, total, err := prodService.GetDeletedProductInfoList(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
 	} else {

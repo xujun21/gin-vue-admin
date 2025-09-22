@@ -1,6 +1,7 @@
 package product
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -19,6 +20,21 @@ type ProductService struct {
 // CreateProduct 创建Product记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (prodService *ProductService) CreateProduct(prod product.Product) (err error) {
+	// 先判断是否存在相同编码的商品(包括被软删除的商品)
+	// 如果存在则报错，商品编码不能重复
+	// 如果不存在则创建新商品
+	var count int64
+	err = global.GVA_DB.Unscoped().Model(&product.Product{}).Where("code = ?", prod.Code).Count(&count).Error
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("商品编码 " + prod.Code + " 已存在，不能重复添加")
+	}
+
+	if prod.CreatedAt.Before(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)) {
+		prod.CreatedAt = time.Now()
+	}
 	err = global.GVA_DB.Create(&prod).Error
 	return err
 }
@@ -78,6 +94,70 @@ func (prodService *ProductService) GetProductInfoList(info productReq.ProductSea
 	// 创建db
 	db := global.GVA_DB.Model(&product.Product{})
 	var prods []product.Product
+	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
+		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
+	}
+	if info.Code != "" {
+		db = db.Where("code LIKE ?", "%"+info.Code+"%")
+	}
+	if info.Product_name_cn != "" {
+		db = db.Where("product_name_cn LIKE ?", "%"+info.Product_name_cn+"%")
+	}
+	if info.Product_name_en != "" {
+		db = db.Where("product_name_en LIKE ?", "%"+info.Product_name_en+"%")
+	}
+	if info.Package != "" {
+		db = db.Where("package LIKE ?", "%"+info.Package+"%")
+	}
+	if info.StartExp_date != nil && info.EndExp_date != nil {
+		db = db.Where("exp_date BETWEEN ? AND ? ", info.StartExp_date, info.EndExp_date)
+	}
+	if info.StartPrice != nil && info.EndPrice != nil {
+		db = db.Where("price BETWEEN ? AND ? ", info.StartPrice, info.EndPrice)
+	}
+	if info.StartVat != nil && info.EndVat != nil {
+		db = db.Where("vat BETWEEN ? AND ? ", info.StartVat, info.EndVat)
+	}
+	if info.StartStore != nil {
+		db = db.Where("store >= ?", info.StartStore)
+	}
+	if info.EndStore != nil {
+		db = db.Where("store <= ?", info.EndStore)
+	}
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	var OrderStr string
+	orderMap := make(map[string]bool)
+	orderMap["code"] = true
+	if orderMap[info.Sort] {
+		OrderStr = info.Sort
+		if info.Order == "descending" {
+			OrderStr = OrderStr + " desc"
+		}
+		db = db.Order(OrderStr)
+	} else {
+		db = db.Order("id desc")
+	}
+
+	err = db.Limit(limit).Offset(offset).Find(&prods).Error
+	return prods, total, err
+}
+
+// GetDeletedProductInfoList 分页获取Product记录
+// Author [piexlmax](https://github.com/piexlmax)
+func (prodService *ProductService) GetDeletedProductInfoList(info productReq.ProductSearch) (list []product.Product, total int64, err error) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	// 创建db
+	db := global.GVA_DB.Unscoped().Model(&product.Product{})
+	// db := global.GVA_DB.Model(&product.Product{})
+	var prods []product.Product
+
+	db = db.Where("deleted_at IS NOT NULL")
+
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)

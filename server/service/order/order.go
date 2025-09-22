@@ -2,6 +2,9 @@ package order
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	company2 "github.com/flipped-aurora/gin-vue-admin/server/model/company"
@@ -10,8 +13,6 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
-	"strconv"
-	"time"
 )
 
 type OrderService struct {
@@ -211,8 +212,16 @@ func (ordService *OrderService) GetOrderInfoList(info orderReq.OrderSearch) (lis
 		db = db.Where("customer_contact_name LIKE ?", "%"+info.Customer_contact_name+"%")
 	}
 	if info.Order.ID != 0 {
-		db = db.Where("ID = ?", info.Order.ID)
+		db = db.Where("order.ID = ?", info.Order.ID)
 	}
+	if info.Product_code != "" {
+		// 将子订单表subOrder连接进来
+		db = db.Joins("LEFT JOIN sub_order so ON so.order_id = order.id")
+		db = db.Where("so.product_code = ?", info.Product_code)
+		db = db.Where("so.deleted_at is null") // 过滤未删除的子订单
+		db = db.Distinct("`order`.*")          // 去重
+	}
+
 	err = db.Count(&total).Error
 	if err != nil {
 		return
@@ -228,7 +237,7 @@ func (ordService *OrderService) GetOrderInfoList(info orderReq.OrderSearch) (lis
 		}
 		db = db.Order(OrderStr)
 	} else {
-		db = db.Order("id desc")
+		db = db.Order("order.id desc")
 	}
 	err = db.Limit(limit).Offset(offset).Find(&ords).Error
 	return ords, total, err

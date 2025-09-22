@@ -1,7 +1,7 @@
 package product
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/api/v1"
+	v1 "github.com/flipped-aurora/gin-vue-admin/server/api/v1"
 	"github.com/flipped-aurora/gin-vue-admin/server/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,8 @@ func (s *ProductRouter) InitProductRouter(Router *gin.RouterGroup) {
 		prodRouter.POST("exportProductExcel", prodApi.ExportProductExcel)   // 导出产品
 	}
 	{
-		prodRouterWithoutRecord.GET("findProduct", prodApi.FindProduct)       // 根据ID获取Product
-		prodRouterWithoutRecord.GET("getProductList", prodApi.GetProductList) // 获取Product列表
+		prodRouterWithoutRecord.GET("findProduct", prodApi.FindProduct)                     // 根据ID获取Product
+		prodRouterWithoutRecord.GET("getProductList", prodApi.GetProductList)               // 获取Product列表
+		prodRouterWithoutRecord.GET("getDeletedProductList", prodApi.GetDeletedProductList) // 获取已删除的Product列表
 	}
 }

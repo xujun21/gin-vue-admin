@@ -1,9 +1,10 @@
 package request
 
 import (
+	"time"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/order"
-	"time"
 )
 
 type OrderSearch struct {
@@ -28,6 +29,7 @@ type OrderSearch struct {
 	EndHand_discount   *float64   `json:"endHand_discount" form:"endHand_discount"`
 	StartCustomer_id   *int       `json:"startCustomer_id" form:"startCustomer_id"`
 	EndCustomer_id     *int       `json:"endCustomer_id" form:"endCustomer_id"`
+	Product_code       string     `json:"product_code" form:"product_code"` // 搜索订单中的商品编码
 	request.PageInfo
 	Sort     string `json:"sort" form:"sort"`
 	OrderStr string `json:"order" form:"order"`

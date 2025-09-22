@@ -97,6 +97,23 @@ export const getProductList = (params) => {
   })
 }
 
+// @Tags Product
+// @Summary 分页获取DeletedProduct列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query request.PageInfo true "分页获取Product列表"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /prod/getDeletedProductList [get]
+export const getDeletedProductList = (params) => {
+  // console.log(params)
+  return service({
+    url: '/prod/getDeletedProductList',
+    method: 'get',
+    params
+  })
+}
+
 export const exportProductExcel = (params) => {
   // console.log(params)
   service({

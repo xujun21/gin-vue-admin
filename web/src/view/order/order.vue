@@ -149,11 +149,12 @@
         -->
         <el-form-item label="客户公司名">
           <el-input v-model="searchInfo.customer_company_name" placeholder="搜索条件" />
-
         </el-form-item>
         <el-form-item label="客户联系人">
           <el-input v-model="searchInfo.customer_contact_name" placeholder="搜索条件" />
-
+        </el-form-item>
+        <el-form-item label="订单商品编号">
+          <el-input v-model="searchInfo.product_code" placeholder="搜索条件" />
         </el-form-item>
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
