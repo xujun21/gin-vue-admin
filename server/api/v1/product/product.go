@@ -67,6 +67,31 @@ func (prodApi *ProductApi) DeleteProduct(c *gin.Context) {
 	}
 }
 
+// RestoreProduct 恢复Product
+// @Tags Product
+// @Summary 恢复Product
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body product.Product true "恢复Product"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"恢复成功"}"
+// @Router /prod/restoreProduct [put]
+func (prodApi *ProductApi) RestoreProduct(c *gin.Context) {
+	var prod product.Product
+	err := c.ShouldBindJSON(&prod)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	prod.UpdatedBy = utils.GetUserID(c)
+	if err := prodService.RestoreProduct(prod); err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败", c)
+	} else {
+		response.OkWithMessage("恢复成功", c)
+	}
+}
+
 // DeleteProductByIds 批量删除Product
 // @Tags Product
 // @Summary 批量删除Product

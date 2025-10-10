@@ -33,6 +33,22 @@ export const deleteProduct = (data) => {
 }
 
 // @Tags Product
+// @Summary 恢复Product
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body model.Product true "恢复Product"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"恢复成功"}"
+// @Router /prod/restoreProduct [post]
+export const restoreProduct = (data) => {
+  return service({
+    url: '/prod/restoreProduct',
+    method: 'put',
+    data
+  })
+}
+
+// @Tags Product
 // @Summary 删除Product
 // @Security ApiKeyAuth
 // @accept application/json

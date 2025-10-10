@@ -94,12 +94,12 @@
         <el-table-column align="left" label="日期" width="180">
           <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
-        <!-- <el-table-column align="left" label="操作">
+        <el-table-column align="left" label="操作">
           <template #default="scope">
-            <el-button type="primary" link icon="edit" size="small" class="table-button" @click="updateProductFunc(scope.row)">变更</el-button>
-            <el-button type="primary" link icon="delete" size="small" @click="deleteRow(scope.row)">删除</el-button>
+            <!-- <el-button type="primary" link icon="edit" size="small" class="table-button" @click="updateProductFunc(scope.row)">变更</el-button> -->
+            <el-button type="primary" link icon="delete" size="small" @click="restoreRow(scope.row)">恢复</el-button>
           </template>
-        </el-table-column> -->
+        </el-table-column>
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -161,10 +161,11 @@ export default {
 
 <script setup>
 import {
-  createProduct,
-  deleteProduct,
-  deleteProductByIds,
-  updateProduct,
+  // createProduct,
+  // deleteProduct,
+  restoreProduct,
+  // deleteProductByIds,
+  // updateProduct,
   findProduct,
   getDeletedProductList,
   exportProductExcel
@@ -266,14 +267,14 @@ const handleSelectionChange = (val) => {
   multipleSelection.value = val
 }
 
-// 删除行
-const deleteRow = (row) => {
-  ElMessageBox.confirm('确定要删除吗?', '提示', {
+// 恢复行
+const restoreRow = (row) => {
+  ElMessageBox.confirm('确定要恢复商品吗?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    deleteProductFunc(row)
+    restoreProductFunc(row)
   })
 }
 
@@ -321,13 +322,13 @@ const updateProductFunc = async(row) => {
   }
 }
 
-// 删除行
-const deleteProductFunc = async(row) => {
-  const res = await deleteProduct({ ID: row.ID })
+// 恢复行
+const restoreProductFunc = async(row) => {
+  const res = await restoreProduct({ ID: row.ID })
   if (res.code === 0) {
     ElMessage({
       type: 'success',
-      message: '删除成功'
+      message: '恢复成功'
     })
     if (tableData.value.length === 1 && page.value > 1) {
       page.value--

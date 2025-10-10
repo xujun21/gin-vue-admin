@@ -54,6 +54,19 @@ func (prodService *ProductService) DeleteProduct(prod product.Product) (err erro
 	return err
 }
 
+func (prodService *ProductService) RestoreProduct(prod product.Product) (err error) {
+	err = global.GVA_DB.Unscoped().Model(&product.Product{}).Where("id = ?", prod.ID).First(&prod).Error
+	if err != nil {
+		return err
+	}
+	err = global.GVA_DB.Model(&product.Product{}).Where("id = ?", prod.ID).Update("deleted_by", 0).Error
+	if err != nil {
+		return err
+	}
+	err = global.GVA_DB.Unscoped().Model(&product.Product{}).Where("id = ?", prod.ID).Update("deleted_at", nil).Error
+	return err
+}
+
 // DeleteProductByIds 批量删除Product记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (prodService *ProductService) DeleteProductByIds(ids request.IdsReq, deleted_by uint) (err error) {

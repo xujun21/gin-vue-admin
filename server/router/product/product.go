@@ -17,6 +17,7 @@ func (s *ProductRouter) InitProductRouter(Router *gin.RouterGroup) {
 	{
 		prodRouter.POST("createProduct", prodApi.CreateProduct)             // 新建Product
 		prodRouter.DELETE("deleteProduct", prodApi.DeleteProduct)           // 删除Product
+		prodRouter.PUT("restoreProduct", prodApi.RestoreProduct)            // 恢复Product
 		prodRouter.DELETE("deleteProductByIds", prodApi.DeleteProductByIds) // 批量删除Product
 		prodRouter.PUT("updateProduct", prodApi.UpdateProduct)              // 更新Product
 		prodRouter.POST("exportProductExcel", prodApi.ExportProductExcel)   // 导出产品
