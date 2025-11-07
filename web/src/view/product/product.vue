@@ -2,12 +2,6 @@
   <div>
     <div class="gva-search-box">
       <el-form :inline="true" :model="searchInfo" class="demo-form-inline">
-        <!--
-        <el-form-item label="创建时间">
-          <el-date-picker v-model="searchInfo.startCreatedAt" type="datetime" placeholder="开始时间" />
-          —
-          <el-date-picker v-model="searchInfo.endCreatedAt" type="datetime" placeholder="结束时间" />
-        </el-form-item>-->
         <el-form-item>
           <el-input v-model="searchInfo.code" placeholder="商品编号" />
         </el-form-item>
@@ -21,32 +15,24 @@
           <el-input v-model="searchInfo.package" placeholder="商品包装规格" />
         </el-form-item>
         <el-form-item label="商品保质期">
-
           <el-date-picker v-model="searchInfo.startExp_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（起）" style="width:150px;" />
           —
           <el-date-picker v-model="searchInfo.endExp_date" format="DD-MM-YYYY" type="date" placeholder="搜索条件（止）" style="width:150px;" />
-
         </el-form-item>
         <el-form-item label="商品价格">
-
           <el-input v-model.number="searchInfo.startPrice" placeholder="起" style="width:100px;" />
           —
           <el-input v-model.number="searchInfo.endPrice" placeholder="止" style="width:100px;" />
-
         </el-form-item>
         <el-form-item label="商品税">
-
           <el-input v-model.number="searchInfo.startVat" placeholder="起" style="width:100px;" />
           —
           <el-input v-model.number="searchInfo.endVat" placeholder="止" style="width:100px;" />
-
         </el-form-item>
         <el-form-item label="商品库存量">
-
           <el-input v-model.number="searchInfo.startStore" placeholder="起" style="width:100px;" />
           —
           <el-input v-model.number="searchInfo.endStore" placeholder="止" style="width:100px;" />
-
         </el-form-item>
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
@@ -81,6 +67,11 @@
       >
         <el-table-column type="selection" width="40" />
         <el-table-column sortable align="left" label="编号" prop="code" width="100" />
+        <el-table-column align="left" label="商品图片" width="100">
+          <template #default="scope">
+            <CustomPic pic-type="file" :pic-src="scope.row.image?scope.row.image:'uploads/file/default.png'" />
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="商品名" prop="product_name_cn" width="400">
           <template #default="scope">{{ scope.row.product_name_cn }} {{ scope.row.product_name_en }}</template>
         </el-table-column>
@@ -142,6 +133,33 @@
         <el-form-item label="商品条码:" prop="barcode">
           <el-input v-model.number="formData.barcode" :clearable="true" placeholder="请输入" />
         </el-form-item>
+        <!-- 优化后的图片显示区域，删除按钮为右上角叉号 -->
+        <el-form-item label="商品图片:" prop="photo">
+          <!-- 图片存在时：CustomPic控件 + 右上角删除叉号 -->
+          <div v-if="formData.image" class="image-with-delete">
+            <CustomPic pic-type="file" :pic-src="formData.image" />
+            <el-button
+              icon="close"
+              size="mini"
+              class="delete-icon"
+              @click="formData.image = ''"
+              title="删除图片"
+            />
+          </div>
+          <!-- 图片不存在时：仅显示上传按钮 -->
+          <el-upload
+            v-else
+            class="upload-demo"
+            :action="`${path}/fileUploadAndDownload/upload`"
+            :headers="{ 'x-token': userStore.token }"
+            :on-success="(response, file) => { formData.image = response.data.file.url }"
+            :limit="1"
+            :file-list="[]"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" style="margin-top: 5px;">支持JPG、PNG格式，建议尺寸比例1:1</div>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -170,17 +188,23 @@ import {
   exportProductExcel
 } from '@/api/product'
 
-// 全量引入格式化工具 请按需保留
-import { formatCurrency, formatDate, formatDateOnly, formatBoolean, filterDict } from '@/utils/format'
+import { formatCurrency, formatDate, formatDateOnly } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue'
 
+import { useUserStore } from '@/pinia/modules/user'
+import CustomPic from '@/components/customPic/index.vue'
+
+const userStore = useUserStore()
+const path = ref(import.meta.env.VITE_BASE_API)
+
+// 导出Excel
 const handleExcelExport = (param) => {
   searchInfo.value.withPrice = param
   exportProductExcel({ ...searchInfo.value })
 }
 
-// 自动化生成的字典（可能为空）以及字段
+// 表单数据
 const formData = ref({
   code: '',
   product_name_cn: '',
@@ -191,53 +215,54 @@ const formData = ref({
   vat: 0,
   store: 0,
   barcode: '',
+  image: ''
 })
 
 // 验证规则
-const rule = reactive({
-})
+const rule = reactive({})
 
 const elFormRef = ref()
 
-// =========== 表格控制部分 ===========
+// 表格控制
 const page = ref(1)
 const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
-// 排序
+
+// 排序处理
 const sortChange = ({ prop, order }) => {
   searchInfo.value.sort = prop
   searchInfo.value.order = order
   getTableData()
 }
 
-// 重置
+// 重置搜索
 const onReset = () => {
   searchInfo.value = {}
   getTableData()
 }
 
-// 搜索
+// 搜索提交
 const onSubmit = () => {
   page.value = 1
   pageSize.value = 10
   getTableData()
 }
 
-// 分页
+// 分页大小变更
 const handleSizeChange = (val) => {
   pageSize.value = val
   getTableData()
 }
 
-// 修改页面容量
+// 页码变更
 const handleCurrentChange = (val) => {
   page.value = val
   getTableData()
 }
 
-// 查询
+// 获取表格数据
 const getTableData = async() => {
   const table = await getProductList({ page: page.value, pageSize: pageSize.value, ...searchInfo.value })
   if (table.code === 0) {
@@ -248,25 +273,16 @@ const getTableData = async() => {
   }
 }
 
+// 初始化加载表格数据
 getTableData()
-
-// ============== 表格控制部分结束 ===============
-
-// 获取需要的字典 可能为空 按需保留
-const setOptions = async() => {
-}
-
-// 获取需要的字典 可能为空 按需保留
-setOptions()
 
 // 多选数据
 const multipleSelection = ref([])
-// 多选
 const handleSelectionChange = (val) => {
   multipleSelection.value = val
 }
 
-// 删除行
+// 单行删除
 const deleteRow = (row) => {
   ElMessageBox.confirm('确定要删除吗?', '提示', {
     confirmButtonText: '确定',
@@ -277,41 +293,28 @@ const deleteRow = (row) => {
   })
 }
 
-// 批量删除控制标记
+// 批量删除控制
 const deleteVisible = ref(false)
-
-// 多选删除
 const onDelete = async() => {
   const ids = []
   if (multipleSelection.value.length === 0) {
-    ElMessage({
-      type: 'warning',
-      message: '请选择要删除的数据'
-    })
+    ElMessage({ type: 'warning', message: '请选择要删除的数据' })
     return
   }
-  multipleSelection.value &&
-        multipleSelection.value.map(item => {
-          ids.push(item.ID)
-        })
+  multipleSelection.value.forEach(item => ids.push(item.ID))
   const res = await deleteProductByIds({ ids })
   if (res.code === 0) {
-    ElMessage({
-      type: 'success',
-      message: '删除成功'
-    })
-    if (tableData.value.length === ids.length && page.value > 1) {
-      page.value--
-    }
+    ElMessage({ type: 'success', message: '删除成功' })
+    if (tableData.value.length === ids.length && page.value > 1) page.value--
     deleteVisible.value = false
     getTableData()
   }
 }
 
-// 行为控制标记（弹窗内部需要增还是改）
+// 弹窗操作类型（新增/编辑）
 const type = ref('')
 
-// 更新行
+// 编辑商品
 const updateProductFunc = async(row) => {
   const res = await findProduct({ ID: row.ID })
   type.value = 'update'
@@ -321,25 +324,20 @@ const updateProductFunc = async(row) => {
   }
 }
 
-// 删除行
+// 删除商品接口调用
 const deleteProductFunc = async(row) => {
   const res = await deleteProduct({ ID: row.ID })
   if (res.code === 0) {
-    ElMessage({
-      type: 'success',
-      message: '删除成功'
-    })
-    if (tableData.value.length === 1 && page.value > 1) {
-      page.value--
-    }
+    ElMessage({ type: 'success', message: '删除成功' })
+    if (tableData.value.length === 1 && page.value > 1) page.value--
     getTableData()
   }
 }
 
-// 弹窗控制标记
+// 弹窗显示控制
 const dialogFormVisible = ref(false)
 
-// 打开弹窗
+// 打开弹窗（新增）
 const openDialog = () => {
   type.value = 'create'
   dialogFormVisible.value = true
@@ -358,35 +356,69 @@ const closeDialog = () => {
     vat: 0,
     store: 0,
     barcode: '',
+    image: ''
   }
 }
-// 弹窗确定
+
+// 弹窗确认提交
 const enterDialog = async() => {
-     elFormRef.value?.validate(async(valid) => {
-       if (!valid) return
-       let res
-       switch (type.value) {
-         case 'create':
-           res = await createProduct(formData.value)
-           break
-         case 'update':
-           res = await updateProduct(formData.value)
-           break
-         default:
-           res = await createProduct(formData.value)
-           break
-       }
-       if (res.code === 0) {
-         ElMessage({
-           type: 'success',
-           message: '创建/更改成功'
-         })
-         closeDialog()
-         getTableData()
-       }
-     })
+  elFormRef.value?.validate(async(valid) => {
+    if (!valid) return
+    let res
+    switch (type.value) {
+      case 'create':
+        res = await createProduct(formData.value)
+        break
+      case 'update':
+        res = await updateProduct(formData.value)
+        break
+      default:
+        res = await createProduct(formData.value)
+        break
+    }
+    if (res.code === 0) {
+      ElMessage({ type: 'success', message: '创建/更改成功' })
+      closeDialog()
+      getTableData()
+    }
+  })
 }
 </script>
 
-<style>
+<style scoped>
+/* 图片与删除按钮容器样式 */
+.image-with-delete {
+  position: relative;
+  display: inline-block; /* 确保容器大小与图片一致 */
+  margin-bottom: 10px;
+}
+
+/* 右上角删除叉号样式 */
+.delete-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background-color: rgba(255, 77, 79, 0.9);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.delete-icon:hover {
+  background-color: #ff4d4f; /* hover时加深颜色 */
+  color: white;
+}
+
+/* 上传提示文字样式 */
+.el-upload__tip {
+  font-size: 12px;
+  color: #666;
+}
 </style>
