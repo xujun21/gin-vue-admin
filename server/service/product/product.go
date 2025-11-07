@@ -3,6 +3,8 @@ package product
 import (
 	"errors"
 	"fmt"
+	"image"
+	"os"
 	"strconv"
 	"time"
 
@@ -224,10 +226,9 @@ func (prodService *ProductService) GetDeletedProductInfoList(info productReq.Pro
 }
 
 func (prodService *ProductService) ExportProductExcel(info productReq.ProductSearch, fileName string) (err error) {
-	// 创建db
+	// 查询数据（逻辑不变）
 	db := global.GVA_DB.Model(&product.Product{})
 	var prods []product.Product
-	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -260,122 +261,191 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 	}
 
 	var OrderStr string
-	orderMap := make(map[string]bool)
-	orderMap["code"] = true
+	orderMap := map[string]bool{"code": true}
 	if orderMap[info.Sort] {
 		OrderStr = info.Sort
 		if info.Order == "descending" {
-			OrderStr = OrderStr + " desc"
+			OrderStr += " desc"
 		}
 		db = db.Order(OrderStr)
 	} else {
 		db = db.Order("id desc")
 	}
 
-	//err = db.Limit(limit).Offset(offset).Find(&prods).Error
-	err = db.Find(&prods).Error
-	if err != nil {
+	if err = db.Find(&prods).Error; err != nil {
 		return err
 	}
 
-	// 创建EXCEL
+	// 创建Excel（核心调整部分）
 	var xlsx *excelize.File
-	i := 0
-	j := 0
+	i, j := 0, 0
 
-	// 区分是普通商品字段还是采购商品字段
 	if info.RequireOrd != nil && *info.RequireOrd == 1 {
+		// 分支1：使用采购商品模板
 		if xlsx, err = excelize.OpenFile(global.GVA_CONFIG.Excel.Dir + "template_product_require.xlsx"); err != nil {
 			return err
 		}
-		var sheet = xlsx.GetSheetName(0)
-		const ColSize int = 11
-		var style1 [ColSize]int
-		var style2 [ColSize]int
-		var startingASCIINumber int = 65
-		for k := 0; k < ColSize; k++ {
-			style1[k], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"4")
-			style2[k], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"5")
-		}
+		sheet := xlsx.GetSheetName(0)
+		const ColSize int = 11              // 原有列数，右移后变为12列（+1列图片）
+		var style1, style2 [ColSize + 1]int // 样式数组+1（适配新增的第一列）
+		startingASCIINumber := 65           // 'A'的ASCII码
+
+		// // 读取样式（原有列样式右移）
+		// for k := 0; k < ColSize; k++ {
+		// 	// 原有第k列（A开始）样式移到第k+1列（B开始）
+		// 	style1[k+1], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"4")
+		// 	style2[k+1], _ = xlsx.GetCellStyle(sheet, string(rune(k+startingASCIINumber))+"5")
+		// }
+		// 第一列（图片列）使用A4/A5的样式
+		// style1[0], _ = xlsx.GetCellStyle(sheet, "A4")
+		// style2[0], _ = xlsx.GetCellStyle(sheet, "A5")
+
+		// 调整第一列宽度以容纳82px图片（1px≈0.14列宽单位）
+		xlsx.SetColWidth(sheet, "A", "A", 82*0.14)
 
 		for i, j = 0, len(prods); i < j; i++ {
 			iStr := strconv.Itoa(4 + i)
-			if i%2 == 0 {
-				for k := 0; k < ColSize; k++ {
-					xlsx.SetCellStyle(sheet, string(rune(k+startingASCIINumber))+iStr, string(rune(k+startingASCIINumber))+iStr, style1[k])
+			index := i % 2
+
+			// 设置行样式（包含新增的第一列）
+			for k := 0; k <= ColSize; k++ {
+				col := string(rune(k + startingASCIINumber))
+				if index == 0 {
+					xlsx.SetCellStyle(sheet, col+iStr, col+iStr, style1[k])
+				} else {
+					xlsx.SetCellStyle(sheet, col+iStr, col+iStr, style2[k])
 				}
-			} else {
-				for k := 0; k < ColSize; k++ {
-					xlsx.SetCellStyle(sheet, string(rune(k+startingASCIINumber))+iStr, string(rune(k+startingASCIINumber))+iStr, style2[k])
-				}
-			}
-			xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
-			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+"\n"+prods[i].Product_name_en)
-			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
-			xlsx.SetCellInt(sheet, "D"+iStr, *prods[i].Store)
-			xlsx.SetCellStr(sheet, "E"+iStr, prods[i].SelfLife)
-			xlsx.SetCellStr(sheet, "F"+iStr, prods[i].Barcode)
-			xlsx.SetCellStr(sheet, "G"+iStr, prods[i].BarcodeCase)
-			xlsx.SetCellStr(sheet, "H"+iStr, prods[i].CartonSize)
-			if prods[i].Cbm != nil {
-				xlsx.SetCellFloat(sheet, "I"+iStr, *prods[i].Cbm, 4, 64)
-			}
-			if prods[i].Weight != nil {
-				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Weight, 2, 64)
-			}
-			if prods[i].InPrice != nil {
-				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].InPrice, 2, 64)
 			}
 
+			// 1. 第一列（A列）添加82x82图片
+			if prods[i].Image != "" {
+				imgPath := prods[i].Image
+				config, err := getImageScaleConfig(imgPath, 82, 82)
+				if err != nil {
+					fmt.Printf("图片处理警告: %v (路径: %s)\n", err, imgPath)
+				} else {
+					if err := xlsx.AddPicture(sheet, "A"+iStr, imgPath, config); err != nil {
+						fmt.Printf("添加图片失败: %v (路径: %s)\n", err, imgPath)
+					}
+				}
+			}
+
+			// 2. 原有列右移一列（A→B, B→C, ..., K→L）
+			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Code)
+			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Product_name_cn+"\n"+prods[i].Product_name_en)
+			xlsx.SetCellStr(sheet, "D"+iStr, prods[i].Package)
+			xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
+			xlsx.SetCellStr(sheet, "F"+iStr, prods[i].SelfLife)
+			xlsx.SetCellStr(sheet, "G"+iStr, prods[i].Barcode)
+			xlsx.SetCellStr(sheet, "H"+iStr, prods[i].BarcodeCase)
+			xlsx.SetCellStr(sheet, "I"+iStr, prods[i].CartonSize)
+			if prods[i].Cbm != nil {
+				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Cbm, 4, 64)
+			}
+			if prods[i].Weight != nil {
+				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].Weight, 2, 64)
+			}
+			if prods[i].InPrice != nil {
+				xlsx.SetCellFloat(sheet, "L"+iStr, *prods[i].InPrice, 2, 64)
+			}
 		}
 	} else {
+		// 分支2：使用普通商品模板
 		if xlsx, err = excelize.OpenFile(global.GVA_CONFIG.Excel.Dir + "template_product.xlsx"); err != nil {
 			return err
 		}
-		var sheet = xlsx.GetSheetName(0)
+		sheet := xlsx.GetSheetName(0)
 
+		// 样式数组调整（原有列右移）
 		var strStyle, dateStyle, numStyle, moneyStyle [2]int
-		strStyle[0], _ = xlsx.GetCellStyle(sheet, "A4")
-		dateStyle[0], _ = xlsx.GetCellStyle(sheet, "D4")
-		numStyle[0], _ = xlsx.GetCellStyle(sheet, "E4")
-		moneyStyle[0], _ = xlsx.GetCellStyle(sheet, "F4")
-		strStyle[1], _ = xlsx.GetCellStyle(sheet, "A5")
-		dateStyle[1], _ = xlsx.GetCellStyle(sheet, "D5")
-		numStyle[1], _ = xlsx.GetCellStyle(sheet, "E5")
-		moneyStyle[1], _ = xlsx.GetCellStyle(sheet, "F5")
+		strStyle[0], _ = xlsx.GetCellStyle(sheet, "C4")   // 原有A列样式→新B列
+		dateStyle[0], _ = xlsx.GetCellStyle(sheet, "E4")  // 原有D列→新E列
+		numStyle[0], _ = xlsx.GetCellStyle(sheet, "F4")   // 原有E列→新F列
+		moneyStyle[0], _ = xlsx.GetCellStyle(sheet, "G4") // 原有F列→新G列
+		strStyle[1], _ = xlsx.GetCellStyle(sheet, "C5")
+		dateStyle[1], _ = xlsx.GetCellStyle(sheet, "E5")
+		numStyle[1], _ = xlsx.GetCellStyle(sheet, "F5")
+		moneyStyle[1], _ = xlsx.GetCellStyle(sheet, "G5")
+
+		// 调整第一列宽度以容纳82px图片
+		xlsx.SetColWidth(sheet, "A", "A", 82*0.14)
 
 		for i, j = 0, len(prods); i < j; i++ {
 			iStr := strconv.Itoa(4 + i)
-
-			if err != nil {
-				fmt.Println(err)
-			}
 			index := i % 2
-			xlsx.SetCellStyle(sheet, "A"+iStr, "C"+iStr, strStyle[index])
-			xlsx.SetCellStyle(sheet, "D"+iStr, "D"+iStr, dateStyle[index])
-			xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, numStyle[index])
-			xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, moneyStyle[index])
-			xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, strStyle[index])
-			xlsx.SetCellStyle(sheet, "H"+iStr, "H"+iStr, moneyStyle[index])
 
-			xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
-			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
-			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
-			if prods[i].Exp_date != nil {
-				xlsx.SetCellValue(sheet, "D"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+			// 设置行样式（原有列右移）
+			xlsx.SetCellStyle(sheet, "B"+iStr, "D"+iStr, strStyle[index])   // 原A-C→新B-D
+			xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, dateStyle[index])  // 原D→新E
+			xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, numStyle[index])   // 原E→新F
+			xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, moneyStyle[index]) // 原F→新G
+			xlsx.SetCellStyle(sheet, "H"+iStr, "H"+iStr, strStyle[index])   // 原G→新H
+			xlsx.SetCellStyle(sheet, "I"+iStr, "I"+iStr, moneyStyle[index]) // 原H→新I
+			// 第一列（图片列）样式
+			xlsx.SetCellStyle(sheet, "A"+iStr, "A"+iStr, strStyle[index])
+
+			// 1. 第一列（A列）添加82x82图片
+			if prods[i].Image != "" {
+				imgPath := prods[i].Image
+				config, err := getImageScaleConfig(imgPath, 82, 82)
+				if err != nil {
+					fmt.Printf("图片处理警告: %v (路径: %s)\n", err, imgPath)
+				} else {
+					if err := xlsx.AddPicture(sheet, "A"+iStr, imgPath, config); err != nil {
+						fmt.Printf("添加图片失败: %v (路径: %s)\n", err, imgPath)
+					}
+				}
 			}
-			xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
-			xlsx.SetCellValue(sheet, "F"+iStr, *prods[i].Price)
-			xlsx.SetCellValue(sheet, "G"+iStr, prods[i].Barcode)
-			xlsx.SetCellValue(sheet, "H"+iStr, *prods[i].Vat)
+
+			// 2. 原有列右移一列（A→B, B→C, ..., H→I）
+			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Code)
+			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Product_name_cn+" "+prods[i].Product_name_en)
+			xlsx.SetCellStr(sheet, "D"+iStr, prods[i].Package)
+			if prods[i].Exp_date != nil {
+				xlsx.SetCellValue(sheet, "E"+iStr, prods[i].Exp_date.Format("02/01/2006"))
+			}
+			xlsx.SetCellInt(sheet, "F"+iStr, *prods[i].Store)
+			xlsx.SetCellValue(sheet, "G"+iStr, *prods[i].Price)
+			xlsx.SetCellValue(sheet, "H"+iStr, prods[i].Barcode)
+			xlsx.SetCellValue(sheet, "I"+iStr, *prods[i].Vat)
 		}
 
+		// 处理无价格情况（调整后列索引）
 		if *info.WithPrice == 0 {
-			xlsx.RemoveCol(sheet, "G")
-			xlsx.RemoveCol(sheet, "F")
+			xlsx.RemoveCol(sheet, "H") // 原G列→新H列
+			xlsx.RemoveCol(sheet, "G") // 原F列→新G列
 		}
 	}
 
-	err = xlsx.SaveAs(fileName)
-	return err
+	return xlsx.SaveAs(fileName)
+}
+
+// 辅助函数：计算图片缩放比例，生成82x82像素的配置
+func getImageScaleConfig(imgPath string, targetWidth, targetHeight int) (string, error) {
+	// 打开图片文件
+	file, err := os.Open(imgPath)
+	if err != nil {
+		return "", fmt.Errorf("打开图片失败: %w", err)
+	}
+	defer file.Close()
+
+	// 获取原图尺寸
+	imgConfig, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return "", fmt.Errorf("解析图片尺寸失败: %w", err)
+	}
+
+	// 计算缩放比例（目标尺寸/原图尺寸）
+	xScale := float64(targetWidth) / float64(imgConfig.Width)
+	yScale := float64(targetHeight) / float64(imgConfig.Height)
+
+	// 生成配置字符串（关闭宽高比锁定，强制缩放）
+	return fmt.Sprintf(`{
+		"x_offset": 3,          
+		"y_offset": 8,          
+		"x_scale": %f,          
+		"y_scale": %f,          
+		"print_obj": true,      
+		"lock_aspect_ratio": false  
+	}`, xScale, yScale), nil
 }
