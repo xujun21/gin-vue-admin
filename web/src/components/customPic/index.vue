@@ -72,7 +72,6 @@ const file = computed(() => {
     margin-right: 8px;
 }
 .file{
-    width: 80px;
     height: 80px;
     position: relative;
 }

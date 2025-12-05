@@ -300,9 +300,6 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 		// style1[0], _ = xlsx.GetCellStyle(sheet, "A4")
 		// style2[0], _ = xlsx.GetCellStyle(sheet, "A5")
 
-		// 调整第一列宽度以容纳82px图片（1px≈0.14列宽单位）
-		xlsx.SetColWidth(sheet, "A", "A", 82*0.14)
-
 		for i, j = 0, len(prods); i < j; i++ {
 			iStr := strconv.Itoa(4 + i)
 			index := i % 2
@@ -317,36 +314,22 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 				}
 			}
 
-			// 1. 第一列（A列）添加82x82图片
-			if prods[i].Image != "" {
-				imgPath := prods[i].Image
-				config, err := getImageScaleConfig(imgPath, 82, 82)
-				if err != nil {
-					fmt.Printf("图片处理警告: %v (路径: %s)\n", err, imgPath)
-				} else {
-					if err := xlsx.AddPicture(sheet, "A"+iStr, imgPath, config); err != nil {
-						fmt.Printf("添加图片失败: %v (路径: %s)\n", err, imgPath)
-					}
-				}
-			}
-
-			// 2. 原有列右移一列（A→B, B→C, ..., K→L）
-			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Code)
-			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Product_name_cn+"\n"+prods[i].Product_name_en)
-			xlsx.SetCellStr(sheet, "D"+iStr, prods[i].Package)
-			xlsx.SetCellInt(sheet, "E"+iStr, *prods[i].Store)
-			xlsx.SetCellStr(sheet, "F"+iStr, prods[i].SelfLife)
-			xlsx.SetCellStr(sheet, "G"+iStr, prods[i].Barcode)
-			xlsx.SetCellStr(sheet, "H"+iStr, prods[i].BarcodeCase)
-			xlsx.SetCellStr(sheet, "I"+iStr, prods[i].CartonSize)
+			xlsx.SetCellStr(sheet, "A"+iStr, prods[i].Code)
+			xlsx.SetCellStr(sheet, "B"+iStr, prods[i].Product_name_cn+"\n"+prods[i].Product_name_en)
+			xlsx.SetCellStr(sheet, "C"+iStr, prods[i].Package)
+			xlsx.SetCellInt(sheet, "D"+iStr, *prods[i].Store)
+			xlsx.SetCellStr(sheet, "E"+iStr, prods[i].SelfLife)
+			xlsx.SetCellStr(sheet, "F"+iStr, prods[i].Barcode)
+			xlsx.SetCellStr(sheet, "G"+iStr, prods[i].BarcodeCase)
+			xlsx.SetCellStr(sheet, "H"+iStr, prods[i].CartonSize)
 			if prods[i].Cbm != nil {
-				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Cbm, 4, 64)
+				xlsx.SetCellFloat(sheet, "I"+iStr, *prods[i].Cbm, 4, 64)
 			}
 			if prods[i].Weight != nil {
-				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].Weight, 2, 64)
+				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Weight, 2, 64)
 			}
 			if prods[i].InPrice != nil {
-				xlsx.SetCellFloat(sheet, "L"+iStr, *prods[i].InPrice, 2, 64)
+				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].InPrice, 2, 64)
 			}
 		}
 	} else {
@@ -436,16 +419,32 @@ func getImageScaleConfig(imgPath string, targetWidth, targetHeight int) (string,
 	}
 
 	// 计算缩放比例（目标尺寸/原图尺寸）
-	xScale := float64(targetWidth) / float64(imgConfig.Width)
+	// xScale := float64(targetWidth) / float64(imgConfig.Width)
 	yScale := float64(targetHeight) / float64(imgConfig.Height)
+	xScale := yScale // 保持宽高比一致
+	// 图片居中
+	xOffset := int((float64(targetWidth) - float64(imgConfig.Width)) / 2)
+	if xOffset < 0 {
+		xOffset = 3
+	}
 
-	// 生成配置字符串（关闭宽高比锁定，强制缩放）
+	// 生成配置字符串（打开宽高比锁定，防止变形）
 	return fmt.Sprintf(`{
-		"x_offset": 3,          
+		"x_offset": %d,          
 		"y_offset": 8,          
 		"x_scale": %f,          
 		"y_scale": %f,          
 		"print_obj": true,      
-		"lock_aspect_ratio": false  
-	}`, xScale, yScale), nil
+		"lock_aspect_ratio": true 
+	}`, xOffset,	xScale, yScale), nil
+
+	// 生成配置字符串（关闭宽高比锁定，强制缩放）
+	// return fmt.Sprintf(`{
+	// 	"x_offset": 3,          
+	// 	"y_offset": 8,          
+	// 	"x_scale": %f,          
+	// 	"y_scale": %f,          
+	// 	"print_obj": true,      
+	// 	"lock_aspect_ratio": false  
+	// }`, xScale, yScale), nil
 }
