@@ -133,6 +133,9 @@
         <el-form-item label="商品条码:" prop="barcode">
           <el-input v-model.number="formData.barcode" :clearable="true" placeholder="请输入" />
         </el-form-item>
+        <el-form-item label="外箱条码:" prop="barcode_case">
+          <el-input v-model="formData.barcode_case" :clearable="true" placeholder="请输入" />
+        </el-form-item>
         <!-- 优化后的图片显示区域，删除按钮为右上角叉号 -->
         <el-form-item label="商品图片:" prop="photo">
           <!-- 图片存在时：CustomPic控件 + 右上角删除叉号 -->
@@ -229,6 +232,7 @@ const formData = ref({
   vat: 0,
   store: 0,
   barcode: '',
+  barcode_case: '',
   image: ''
 })
 
@@ -370,6 +374,7 @@ const closeDialog = () => {
     vat: 0,
     store: 0,
     barcode: '',
+    barcode_case: '',
     image: ''
   }
 }

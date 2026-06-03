@@ -365,8 +365,8 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 			xlsx.SetCellStyle(sheet, "E"+iStr, "E"+iStr, dateStyle[index])  // 原D→新E
 			xlsx.SetCellStyle(sheet, "F"+iStr, "F"+iStr, numStyle[index])   // 原E→新F
 			xlsx.SetCellStyle(sheet, "G"+iStr, "G"+iStr, moneyStyle[index]) // 原F→新G
-			xlsx.SetCellStyle(sheet, "H"+iStr, "H"+iStr, strStyle[index])   // 原G→新H
-			xlsx.SetCellStyle(sheet, "I"+iStr, "I"+iStr, moneyStyle[index]) // 原H→新I
+			xlsx.SetCellStyle(sheet, "H"+iStr, "I"+iStr, strStyle[index])   // H=BARCODE, I=BARCODE(CASE)
+			xlsx.SetCellStyle(sheet, "J"+iStr, "J"+iStr, moneyStyle[index]) // 原I VAT→新J
 			// 第一列（图片列）样式
 			xlsx.SetCellStyle(sheet, "A"+iStr, "A"+iStr, strStyle[index])
 
@@ -393,7 +393,8 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 			xlsx.SetCellInt(sheet, "F"+iStr, *prods[i].Store)
 			xlsx.SetCellValue(sheet, "G"+iStr, *prods[i].Price)
 			xlsx.SetCellValue(sheet, "H"+iStr, prods[i].Barcode)
-			xlsx.SetCellValue(sheet, "I"+iStr, *prods[i].Vat)
+			xlsx.SetCellStr(sheet, "I"+iStr, prods[i].BarcodeCase)
+			xlsx.SetCellValue(sheet, "J"+iStr, *prods[i].Vat)
 		}
 
 		// 处理无价格情况（调整后列索引）
