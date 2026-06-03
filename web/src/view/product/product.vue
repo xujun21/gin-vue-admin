@@ -36,8 +36,8 @@
         </el-form-item>
         <el-form-item>
           <el-button size="small" type="primary" icon="search" @click="onSubmit">查询</el-button>
-          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport(1)">导出(含价格)</el-button>
-          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExport(0)">导出(无价格)</el-button>
+          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExportWithImage(1)">导出(含价格)</el-button>
+          <el-button class="excel-btn" size="small" type="primary" icon="download" @click="handleExcelExportWithImage(0)">导出(无价格)</el-button>
           <el-button size="small" icon="refresh" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -199,9 +199,23 @@ const userStore = useUserStore()
 const path = ref(import.meta.env.VITE_BASE_API)
 
 // 导出Excel
-const handleExcelExport = (param) => {
+const handleExcelExport = (param, withPhoto) => {
   searchInfo.value.withPrice = param
+  searchInfo.value.withPhoto = withPhoto
   exportProductExcel({ ...searchInfo.value })
+}
+
+// 导出时添加一个弹窗，提示是否需要导出商品图片
+const handleExcelExportWithImage = (param) => {
+  ElMessageBox.confirm('是否需要导出商品图片？(耗时)', '提示', {
+    confirmButtonText: '需要（慢）',
+    cancelButtonText: '不需要（快）',
+    type: 'warning'
+  }).then(() => {
+    handleExcelExport(param, 1)
+  }).catch(() => {
+    handleExcelExport(param, 0)
+  })
 }
 
 // 表单数据

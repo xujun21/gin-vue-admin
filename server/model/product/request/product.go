@@ -23,4 +23,5 @@ type ProductSearch struct {
 	Order      string `json:"order" form:"order"`
 	WithPrice  *int   `json:"withPrice" form:"withPrice"`
 	RequireOrd *int   `json:"requireOrd" form:"requireOrd"` // 用于采购单相关的商品字段导出，==1时为导出采购单字段
+	WithPhoto  *int   `json:"withPhoto" form:"withPhoto"`   // 是否导出图片字段
 }

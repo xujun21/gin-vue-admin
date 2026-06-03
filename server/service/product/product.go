@@ -328,8 +328,11 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 			if prods[i].Weight != nil {
 				xlsx.SetCellFloat(sheet, "J"+iStr, *prods[i].Weight, 2, 64)
 			}
+			if prods[i].GrossWeight != nil {
+				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].GrossWeight, 2, 64)
+			}
 			if prods[i].InPrice != nil {
-				xlsx.SetCellFloat(sheet, "K"+iStr, *prods[i].InPrice, 2, 64)
+				xlsx.SetCellFloat(sheet, "L"+iStr, *prods[i].InPrice, 2, 64)
 			}
 		}
 	} else {
@@ -368,7 +371,7 @@ func (prodService *ProductService) ExportProductExcel(info productReq.ProductSea
 			xlsx.SetCellStyle(sheet, "A"+iStr, "A"+iStr, strStyle[index])
 
 			// 1. 第一列（A列）添加82x82图片
-			if prods[i].Image != "" {
+			if prods[i].Image != "" && info.WithPhoto != nil && *info.WithPhoto == 1 {
 				imgPath := prods[i].Image
 				config, err := getImageScaleConfig(imgPath, 82, 82)
 				if err != nil {
@@ -436,15 +439,15 @@ func getImageScaleConfig(imgPath string, targetWidth, targetHeight int) (string,
 		"y_scale": %f,          
 		"print_obj": true,      
 		"lock_aspect_ratio": true 
-	}`, xOffset,	xScale, yScale), nil
+	}`, xOffset, xScale, yScale), nil
 
 	// 生成配置字符串（关闭宽高比锁定，强制缩放）
 	// return fmt.Sprintf(`{
-	// 	"x_offset": 3,          
-	// 	"y_offset": 8,          
-	// 	"x_scale": %f,          
-	// 	"y_scale": %f,          
-	// 	"print_obj": true,      
-	// 	"lock_aspect_ratio": false  
+	// 	"x_offset": 3,
+	// 	"y_offset": 8,
+	// 	"x_scale": %f,
+	// 	"y_scale": %f,
+	// 	"print_obj": true,
+	// 	"lock_aspect_ratio": false
 	// }`, xScale, yScale), nil
 }

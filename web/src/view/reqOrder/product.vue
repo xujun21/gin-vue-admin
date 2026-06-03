@@ -103,6 +103,9 @@
         <el-table-column align="left" label="WEIGHT" width="100">
           <template #default="scope">{{ scope.row.weight }}</template>
         </el-table-column>
+        <el-table-column align="left" label="GROSS WEIGHT" width="140">
+          <template #default="scope">{{ scope.row.gross_weight }}</template>
+        </el-table-column>
         <el-table-column align="left" label="PRICE" width="100">
           <template #default="scope">{{ scope.row.in_price }}</template>
         </el-table-column>
@@ -154,6 +157,9 @@
         </el-form-item>
         <el-form-item label="Weight:" prop="weight">
           <el-input-number v-model.number="formData.weight" :clearable="true" :precision="2" />
+        </el-form-item>
+        <el-form-item label="Gross Weight:" prop="gross_weight">
+          <el-input-number v-model.number="formData.gross_weight" :clearable="true" :precision="2" />
         </el-form-item>
         <el-form-item label="采购价格:" prop="in_price">
           <el-input-number v-model.number="formData.in_price" style="width:100%" :precision="2" :clearable="true" />
@@ -212,6 +218,7 @@ const formData = ref({
   carton_size: '',
   cbm: 0,
   weight: 0,
+  gross_weight: 0,
   in_price: 0,
 })
 
@@ -385,6 +392,7 @@ const closeDialog = () => {
     carton_size: '',
     cbm: 0,
     weight: 0,
+    gross_weight: 0,
     in_price: 0,
   }
 }

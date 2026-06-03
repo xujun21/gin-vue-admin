@@ -30,6 +30,7 @@ type Product struct {
 	CartonSize  string   `json:"carton_size" form:"carton_size" gorm:"column:carton_size;comment:;"`
 	Cbm         *float64 `json:"cbm" form:"cbm" gorm:"column:cbm;comment:;"`
 	Weight      *float64 `json:"weight" form:"weight" gorm:"column:weight;comment:;"`
+	GrossWeight *float64 `json:"gross_weight" form:"gross_weight" gorm:"column:gross_weight;comment:毛重;"`
 	InPrice     *float64 `json:"in_price" form:"in_price" gorm:"column:in_price;comment:采购价;"`
 }
 
